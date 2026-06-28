@@ -63,7 +63,7 @@ pip install pytest requests pytest-html
 
 ## Getting Your API Token
 
-1. Log in to `https://179.237.84.212`
+1. Log in to `localhost:8080`
 2. Click your avatar → **Settings** → **Applications**
 3. Under **Personal access tokens** → click **New token**
 4. Select scopes: `deposits:actions`, `deposits:metadata`, `deposits:files`
@@ -111,7 +111,7 @@ pytest tests/ -v --no-verify-tls
 
 | Option | Default | Description |
 |---|---|---|
-| `--base-url` | `https://179.237.84.212` | GEO Knowledge Hub URL |
+| `--base-url` | `localhost:8080` | GEO Knowledge Hub URL |
 | `--api-token` | *(GEO_API_TOKEN env var)* | Bearer token |
 | `--no-verify-tls` | `False` | Skip TLS verification (self-signed certs) |
 
