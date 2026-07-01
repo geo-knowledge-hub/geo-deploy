@@ -31,8 +31,8 @@ def search(http: Session, base_url: str) -> SearchClient:
 # Full-text search
 # ---------------------------------------------------------------------------
 
-class TestFullTextSearch:
 
+class TestFullTextSearch:
     def test_returns_hits_structure(self, search: SearchClient) -> None:
         r = search.search(size=5)
         assert_ok(r, 200)
@@ -69,25 +69,21 @@ class TestFullTextSearch:
 # Spatial / bounding box search
 # ---------------------------------------------------------------------------
 
-class TestSpatialSearch:
 
+class TestSpatialSearch:
     def test_bbox_search_returns_200(self, search: SearchClient) -> None:
         """
         Bounding box covering the whole of Africa.
         Should always return a valid (possibly empty) result set.
         west=-20, south=-35, east=55, north=38
         """
-        r = search.search_by_bbox(
-            west=-20, south=-35, east=55, north=38
-        )
+        r = search.search_by_bbox(west=-20, south=-35, east=55, north=38)
         assert_ok(r, 200)
         assert "hits" in r.json()
 
     def test_bbox_ghana(self, search: SearchClient) -> None:
         """Bounding box covering Ghana (west=-3.26, south=4.74, east=1.19, north=11.17)."""
-        r = search.search_by_bbox(
-            west=-3.26, south=4.74, east=1.19, north=11.17
-        )
+        r = search.search_by_bbox(west=-3.26, south=4.74, east=1.19, north=11.17)
         assert_ok(r, 200)
         data = r.json()
         assert "hits" in data
@@ -95,7 +91,10 @@ class TestSpatialSearch:
     def test_bbox_with_text_query(self, search: SearchClient) -> None:
         """Spatial filter combined with a full-text keyword."""
         r = search.search_by_bbox(
-            west=-3.26, south=4.74, east=1.19, north=11.17,
+            west=-3.26,
+            south=4.74,
+            east=1.19,
+            north=11.17,
             query="climate",
         )
         assert_ok(r, 200)
@@ -105,9 +104,7 @@ class TestSpatialSearch:
         Tight bounding box covering Northern Ghana region
         (Tamale area: roughly 8.5N–11.2N, 2.5W–0.2E).
         """
-        r = search.search_by_bbox(
-            west=-2.5, south=8.5, east=0.2, north=11.2
-        )
+        r = search.search_by_bbox(west=-2.5, south=8.5, east=0.2, north=11.2)
         assert_ok(r, 200)
 
     def test_point_search_tamale(self, search: SearchClient) -> None:
@@ -131,17 +128,13 @@ class TestSpatialSearch:
         Bounding box in the middle of the Pacific Ocean.
         Should return a valid (probably empty) result — not an error.
         """
-        r = search.search_by_bbox(
-            west=-180, south=-90, east=-90, north=-45
-        )
+        r = search.search_by_bbox(west=-180, south=-90, east=-90, north=-45)
         assert_ok(r, 200)
         assert isinstance(r.json()["hits"]["hits"], list)
 
     def test_bbox_global(self, search: SearchClient) -> None:
         """Full global bounding box — should return all spatially indexed records."""
-        r = search.search_by_bbox(
-            west=-180, south=-90, east=180, north=90
-        )
+        r = search.search_by_bbox(west=-180, south=-90, east=180, north=90)
         assert_ok(r, 200)
 
 
@@ -149,8 +142,8 @@ class TestSpatialSearch:
 # Resource type filtering
 # ---------------------------------------------------------------------------
 
-class TestFilteredSearch:
 
+class TestFilteredSearch:
     def test_filter_by_dataset(self, search: SearchClient) -> None:
         r = search.search_by_resource_type("dataset")
         assert_ok(r, 200)
@@ -173,16 +166,14 @@ class TestFilteredSearch:
 # Combined search (text + spatial + type)
 # ---------------------------------------------------------------------------
 
-class TestCombinedSearch:
 
+class TestCombinedSearch:
     def test_text_only(self, search: SearchClient) -> None:
         r = search.search_combined(query="earth observation")
         assert_ok(r, 200)
 
     def test_spatial_only(self, search: SearchClient) -> None:
-        r = search.search_combined(
-            west=-3.26, south=4.74, east=1.19, north=11.17
-        )
+        r = search.search_combined(west=-3.26, south=4.74, east=1.19, north=11.17)
         assert_ok(r, 200)
 
     def test_type_only(self, search: SearchClient) -> None:
@@ -192,7 +183,10 @@ class TestCombinedSearch:
     def test_text_and_spatial(self, search: SearchClient) -> None:
         r = search.search_combined(
             query="rainfall",
-            west=-3.26, south=4.74, east=1.19, north=11.17,
+            west=-3.26,
+            south=4.74,
+            east=1.19,
+            north=11.17,
         )
         assert_ok(r, 200)
 
@@ -207,7 +201,10 @@ class TestCombinedSearch:
         """
         r = search.search_combined(
             query="rainfall",
-            west=-3.26, south=4.74, east=1.19, north=11.17,
+            west=-3.26,
+            south=4.74,
+            east=1.19,
+            north=11.17,
             resource_type="dataset",
         )
         assert_ok(r, 200)

@@ -16,25 +16,29 @@ class TestLoginPage:
     """Login UI — no credentials required."""
 
     def test_login_page_returns_200(self, base_url: str, verify_tls: bool) -> None:
-        r = requests.get(f"{base_url}/login", verify=verify_tls, timeout=15,
-                         allow_redirects=True)
+        r = requests.get(
+            f"{base_url}/login", verify=verify_tls, timeout=15, allow_redirects=True
+        )
         assert r.status_code == 200
 
     def test_login_page_contains_form(self, base_url: str, verify_tls: bool) -> None:
-        r = requests.get(f"{base_url}/login", verify=verify_tls, timeout=15,
-                         allow_redirects=True)
+        r = requests.get(
+            f"{base_url}/login", verify=verify_tls, timeout=15, allow_redirects=True
+        )
         body = r.text.lower()
         assert "email" in body or "username" in body or "login" in body
 
     def test_logout_does_not_crash(self, base_url: str, verify_tls: bool) -> None:
-        r = requests.get(f"{base_url}/logout", verify=verify_tls, timeout=10,
-                         allow_redirects=True)
+        r = requests.get(
+            f"{base_url}/logout", verify=verify_tls, timeout=10, allow_redirects=True
+        )
         assert r.status_code < 500
 
     def test_account_page_accessible(self, base_url: str, verify_tls: bool) -> None:
         """Redirects to login if unauthenticated — still should not 5xx."""
-        r = requests.get(f"{base_url}/account", verify=verify_tls, timeout=10,
-                         allow_redirects=True)
+        r = requests.get(
+            f"{base_url}/account", verify=verify_tls, timeout=10, allow_redirects=True
+        )
         assert r.status_code < 500
 
 

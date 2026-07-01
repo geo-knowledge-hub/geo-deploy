@@ -8,7 +8,7 @@ If an endpoint URL changes, update only this file.
 
 from __future__ import annotations
 
-from requests import Response, Session
+from requests import Response
 
 from client.base import BaseClient
 
@@ -37,7 +37,9 @@ class PackagesClient(BaseClient):
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/packages with full pagination support."""
-        return self._get("/api/packages", params={"q": query, "page": page, "size": size})
+        return self._get(
+            "/api/packages", params={"q": query, "page": page, "size": size}
+        )
 
     # ------------------------------------------------------------------
     # Draft management
@@ -96,13 +98,9 @@ class PackagesClient(BaseClient):
 
     def commit_file(self, package_id: str, filename: str) -> Response:
         """POST /api/packages/{id}/draft/files/{filename}/commit."""
-        return self._post(
-            f"/api/packages/{package_id}/draft/files/{filename}/commit"
-        )
+        return self._post(f"/api/packages/{package_id}/draft/files/{filename}/commit")
 
-    def upload_file(
-        self, package_id: str, filename: str, content: bytes
-    ) -> None:
+    def upload_file(self, package_id: str, filename: str, content: bytes) -> None:
         """Full 3-step upload: init → content → commit."""
         self.assert_ok(self.init_file(package_id, filename), 201)
         self.assert_ok(self.upload_file_content(package_id, filename, content), 200)
@@ -174,9 +172,7 @@ class PackagesClient(BaseClient):
         """GET /api/packages/{id}/draft/resources."""
         return self._get(f"/api/packages/{package_id}/draft/resources")
 
-    def remove_resource_from_draft(
-        self, package_id: str, resource_id: str
-    ) -> Response:
+    def remove_resource_from_draft(self, package_id: str, resource_id: str) -> Response:
         """
         DELETE /api/packages/{id}/draft/resources
         Remove a specific resource from the current draft.
@@ -202,6 +198,4 @@ class PackagesClient(BaseClient):
           4. edit / add more resources
           5. publish (v2)
         """
-        return self._post(
-            f"/api/packages/{package_id}/draft/actions/resources-import"
-        )
+        return self._post(f"/api/packages/{package_id}/draft/actions/resources-import")

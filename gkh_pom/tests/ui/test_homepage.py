@@ -8,7 +8,6 @@ No authentication required.
 from __future__ import annotations
 
 import requests
-import pytest
 from requests import Session
 
 from fixtures import assert_ok
@@ -53,14 +52,14 @@ class TestHomepage:
         self, base_url: str, verify_tls: bool
     ) -> None:
         r = requests.get(
-            f"{base_url}/static/", verify=verify_tls, timeout=10,
+            f"{base_url}/static/",
+            verify=verify_tls,
+            timeout=10,
             allow_redirects=True,
         )
         assert r.status_code < 500
 
-    def test_api_root_no_server_error(
-        self, anon_http: Session, base_url: str
-    ) -> None:
+    def test_api_root_no_server_error(self, anon_http: Session, base_url: str) -> None:
         r = anon_http.get(f"{base_url}/api/", timeout=10)
         assert r.status_code < 500
 
@@ -69,8 +68,9 @@ class TestPublicSearchPage:
     """Public /search page — no login needed."""
 
     def test_search_page_loads(self, base_url: str, verify_tls: bool) -> None:
-        r = requests.get(f"{base_url}/search", verify=verify_tls, timeout=15,
-                         allow_redirects=True)
+        r = requests.get(
+            f"{base_url}/search", verify=verify_tls, timeout=15, allow_redirects=True
+        )
         assert r.status_code == 200
 
     def test_api_search_public(self, anon_http: Session, base_url: str) -> None:

@@ -37,9 +37,7 @@ class CommunitiesClient(BaseClient):
         """
         return self._put(f"/api/communities/{community_id}", json=payload)
 
-    def fetch_and_update_title(
-        self, community_id: str, new_title: str
-    ) -> Response:
+    def fetch_and_update_title(self, community_id: str, new_title: str) -> Response:
         """
         Fetch the current community state, update the title, PUT back.
         Uses the full response body (including slug) to satisfy validation.

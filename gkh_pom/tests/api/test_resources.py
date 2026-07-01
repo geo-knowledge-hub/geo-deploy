@@ -18,13 +18,14 @@ import pytest
 from requests import Session
 
 from client.resources import ResourcesClient
-from factories import make_resource_payload, make_resource_payload_with_files
+from factories import make_resource_payload
 from fixtures import assert_ok
 
 
 # ---------------------------------------------------------------------------
 # Client fixture — function-scoped so each test gets a clean client object
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def resources(http: Session, base_url: str) -> ResourcesClient:
@@ -35,8 +36,8 @@ def resources(http: Session, base_url: str) -> ResourcesClient:
 # Search & discovery
 # ---------------------------------------------------------------------------
 
-class TestResourceSearch:
 
+class TestResourceSearch:
     def test_list_published_resources(self, resources: ResourcesClient) -> None:
         r = resources.list_published(size=5)
         assert_ok(r, 200)
@@ -75,8 +76,8 @@ class TestResourceSearch:
 # Draft lifecycle
 # ---------------------------------------------------------------------------
 
-class TestResourceDraft:
 
+class TestResourceDraft:
     def test_create_draft(self, resources: ResourcesClient) -> None:
         r = resources.create_draft(make_resource_payload())
         assert_ok(r, 201)
@@ -85,9 +86,7 @@ class TestResourceDraft:
         assert data.get("is_draft") is True
         resources.delete_draft(data["id"])
 
-    def test_get_draft(
-        self, resources: ResourcesClient, resource_draft: dict
-    ) -> None:
+    def test_get_draft(self, resources: ResourcesClient, resource_draft: dict) -> None:
         r = resources.get_draft(resource_draft["id"])
         assert_ok(r, 200)
         assert r.json()["id"] == resource_draft["id"]
@@ -105,9 +104,7 @@ class TestResourceDraft:
         self, resources: ResourcesClient, resource_draft: dict
     ) -> None:
         for i in range(3):
-            r = resources.fetch_and_update_title(
-                resource_draft["id"], f"Iteration {i}"
-            )
+            r = resources.fetch_and_update_title(resource_draft["id"], f"Iteration {i}")
             assert_ok(r, 200)
             assert r.json()["metadata"]["title"] == f"Iteration {i}"
 
@@ -138,8 +135,8 @@ class TestResourceDraft:
 # Publish & versioning  (follows official API docs flow)
 # ---------------------------------------------------------------------------
 
-class TestResourcePublish:
 
+class TestResourcePublish:
     def test_publish_resource(
         self, resources: ResourcesClient, http: Session, base_url: str
     ) -> None:
@@ -186,8 +183,8 @@ class TestResourcePublish:
 # File uploads  (follows official API docs 3-step flow)
 # ---------------------------------------------------------------------------
 
-class TestResourceFileUpload:
 
+class TestResourceFileUpload:
     def test_full_upload_cycle(
         self, resources: ResourcesClient, resource_draft_with_files: dict
     ) -> None:

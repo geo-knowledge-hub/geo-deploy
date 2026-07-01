@@ -27,7 +27,6 @@ def resources(http: Session, base_url: str) -> ResourcesClient:
 
 
 class TestPackageDraftBehaviour:
-
     def test_new_draft_is_draft(self, package_draft: dict) -> None:
         assert package_draft.get("is_draft") is True
 
@@ -58,9 +57,7 @@ class TestPackageDraftBehaviour:
             assert_ok(r, 200)
             assert r.json()["metadata"]["title"] == f"Title {i}"
 
-    def test_deleted_draft_is_unreachable(
-        self, packages: PackagesClient
-    ) -> None:
+    def test_deleted_draft_is_unreachable(self, packages: PackagesClient) -> None:
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
         pid = r.json()["id"]
@@ -74,9 +71,7 @@ class TestPackageDraftBehaviour:
         assert_ok(r, 200)
         assert isinstance(r.json().get("entries", []), list)
 
-    def test_edit_draft_opens_from_published(
-        self, packages: PackagesClient
-    ) -> None:
+    def test_edit_draft_opens_from_published(self, packages: PackagesClient) -> None:
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
         pid = r.json()["id"]
@@ -87,7 +82,6 @@ class TestPackageDraftBehaviour:
 
 
 class TestResourceDraftBehaviour:
-
     def test_new_draft_is_draft(self, resource_draft: dict) -> None:
         assert resource_draft.get("is_draft") is True
 

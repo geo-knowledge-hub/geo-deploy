@@ -32,6 +32,7 @@ from factories import (
 # Core session fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="session")
 def base_url(request: pytest.FixtureRequest) -> str:
     """Base URL of the GEO Knowledge Hub instance (no trailing slash)."""
@@ -52,8 +53,6 @@ def verify_tls(request: pytest.FixtureRequest) -> bool:
     """False when --no-verify-tls is passed (self-signed / IP-based certs)."""
     return not request.config.getoption("--no-verify-tls")
 
-
-
     """
     Authenticated requests.Session.
     Shared across the entire test run for performance.
@@ -68,7 +67,7 @@ def verify_tls(request: pytest.FixtureRequest) -> bool:
       400 {"message": "Referer checking failed - no Referer."}
     """
 
-    
+
 @pytest.fixture(scope="session")
 def http(base_url: str, api_token: str, verify_tls: bool) -> Session:
     s = Session()
@@ -81,21 +80,24 @@ def http(base_url: str, api_token: str, verify_tls: bool) -> Session:
     # Fetch the CSRF token from the API endpoint instead.
     r_csrf = s.get(f"{base_url}/api/")
     csrf = (
-        s.cookies.get("csrftoken")         
-        or s.cookies.get("csrf_token")      
+        s.cookies.get("csrftoken")
+        or s.cookies.get("csrf_token")
         or r_csrf.headers.get("X-CSRFToken")
         or ""
     )
 
-    s.headers.update({
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json",
-        "Referer": base_url,
-        "Origin": base_url,
-        "X-CSRFToken": csrf,
-    })
+    s.headers.update(
+        {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json",
+            "Referer": base_url,
+            "Origin": base_url,
+            "X-CSRFToken": csrf,
+        }
+    )
 
     return s
+
 
 @pytest.fixture(scope="session")
 def anon_http(verify_tls: bool) -> Session:
@@ -112,6 +114,7 @@ def anon_http(verify_tls: bool) -> Session:
 # ---------------------------------------------------------------------------
 # Resource fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def resource_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
@@ -166,9 +169,11 @@ def published_resource(http: Session, base_url: str) -> Generator[dict, None, No
     )
     yield r_pub.json()
 
+
 # ---------------------------------------------------------------------------
 # Package fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def package_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
@@ -227,6 +232,7 @@ def published_package(http: Session, base_url: str) -> Generator[dict, None, Non
 # Community fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def community(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
@@ -242,6 +248,7 @@ def community(http: Session, base_url: str) -> Generator[dict, None, None]:
 # ---------------------------------------------------------------------------
 # Shared helper (importable by test files)
 # ---------------------------------------------------------------------------
+
 
 def assert_ok(r: Response, *expected: int) -> None:
     """

@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pytest
 import urllib3
+from fixtures import *  # noqa: F401, F403
+from factories import *  # noqa: F401, F403
 
 # ---------------------------------------------------------------------------
 # Load .env file from the project root before anything else runs.
@@ -34,6 +36,7 @@ import urllib3
 # ---------------------------------------------------------------------------
 try:
     from dotenv import load_dotenv
+
     _env_file = Path(__file__).parent / ".env"
     if _env_file.exists():
         load_dotenv(_env_file)
@@ -51,11 +54,9 @@ except ImportError:
     )
 
 # Re-export everything so pytest auto-discovers fixtures in tests/api/ and tests/ui/
-from fixtures import *   # noqa: F401, F403
-from factories import *  # noqa: F401, F403
 
 # ---------------------------------------------------------------------------
-# Suppress SSL warnings at import time (self-signed cert on 179.237.84.212)
+# Suppress SSL warnings at import time (self-signed cert on site/host address)
 # ---------------------------------------------------------------------------
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
@@ -74,10 +75,11 @@ def _no_verify_ctx(*args, **kwargs):
 # CLI options
 # ---------------------------------------------------------------------------
 
+
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--base-url",
-        default=os.getenv("GEO_BASE_URL", "https://179.237.84.212"),
+        default=os.getenv("GEO_BASE_URL", ""),
         help="Base URL of the GEO Knowledge Hub instance (or set GEO_BASE_URL in .env)",
     )
     parser.addoption(

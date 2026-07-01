@@ -21,7 +21,6 @@ def communities(http: Session, base_url: str) -> CommunitiesClient:
 
 
 class TestCommunitySearch:
-
     def test_list_communities(self, communities: CommunitiesClient) -> None:
         r = communities.list(size=5)
         assert_ok(r, 200)
@@ -47,7 +46,6 @@ class TestCommunitySearch:
 
 
 class TestCommunityCRUD:
-
     def test_create_community(self, communities: CommunitiesClient) -> None:
         payload = make_community_payload()
         r = communities.create(payload)
@@ -57,16 +55,12 @@ class TestCommunityCRUD:
         assert data["metadata"]["title"] == payload["metadata"]["title"]
         communities.delete(data["id"])
 
-    def test_get_by_id(
-        self, communities: CommunitiesClient, community: dict
-    ) -> None:
+    def test_get_by_id(self, communities: CommunitiesClient, community: dict) -> None:
         r = communities.get(community["id"])
         assert_ok(r, 200)
         assert r.json()["id"] == community["id"]
 
-    def test_get_by_slug(
-        self, communities: CommunitiesClient, community: dict
-    ) -> None:
+    def test_get_by_slug(self, communities: CommunitiesClient, community: dict) -> None:
         slug = community.get("slug") or community["id"]
         r = communities.get(slug)
         assert_ok(r, 200)
@@ -87,7 +81,6 @@ class TestCommunityCRUD:
 
 
 class TestCommunityMembers:
-
     def test_list_members(
         self, communities: CommunitiesClient, community: dict
     ) -> None:

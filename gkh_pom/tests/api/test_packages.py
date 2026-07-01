@@ -13,7 +13,7 @@ from requests import Session
 
 from client.packages import PackagesClient
 from client.resources import ResourcesClient
-from factories import make_package_payload, make_package_payload_with_files, make_resource_payload
+from factories import make_package_payload, make_resource_payload
 from fixtures import assert_ok
 
 
@@ -31,8 +31,8 @@ def resources(http: Session, base_url: str) -> ResourcesClient:
 # Search & discovery
 # ---------------------------------------------------------------------------
 
-class TestPackageSearch:
 
+class TestPackageSearch:
     def test_list_published_packages(self, packages: PackagesClient) -> None:
         r = packages.list_published(size=5)
         assert_ok(r, 200)
@@ -66,8 +66,8 @@ class TestPackageSearch:
 # Draft lifecycle
 # ---------------------------------------------------------------------------
 
-class TestPackageDraft:
 
+class TestPackageDraft:
     def test_create_draft(self, packages: PackagesClient) -> None:
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
@@ -76,9 +76,7 @@ class TestPackageDraft:
         assert data.get("is_draft") is True
         packages.delete_draft(data["id"])
 
-    def test_get_draft(
-        self, packages: PackagesClient, package_draft: dict
-    ) -> None:
+    def test_get_draft(self, packages: PackagesClient, package_draft: dict) -> None:
         r = packages.get_draft(package_draft["id"])
         assert_ok(r, 200)
         assert r.json()["id"] == package_draft["id"]
@@ -96,9 +94,7 @@ class TestPackageDraft:
         self, packages: PackagesClient, package_draft: dict
     ) -> None:
         for i in range(3):
-            r = packages.fetch_and_update_title(
-                package_draft["id"], f"Iteration {i}"
-            )
+            r = packages.fetch_and_update_title(package_draft["id"], f"Iteration {i}")
             assert_ok(r, 200)
 
     def test_delete_draft(self, packages: PackagesClient) -> None:
@@ -129,8 +125,8 @@ class TestPackageDraft:
 # Publish & versioning
 # ---------------------------------------------------------------------------
 
-class TestPackagePublish:
 
+class TestPackagePublish:
     def test_publish_package(
         self, packages: PackagesClient, http: Session, base_url: str
     ) -> None:
@@ -185,8 +181,8 @@ class TestPackagePublish:
 # File uploads
 # ---------------------------------------------------------------------------
 
-class TestPackageFileUpload:
 
+class TestPackageFileUpload:
     def test_full_upload_cycle(
         self, packages: PackagesClient, package_draft_with_files: dict
     ) -> None:
@@ -231,11 +227,17 @@ class TestPackageFileUpload:
     ) -> None:
         """The init endpoint accepts a list — declare 3 files in one call."""
         pid = package_draft_with_files["id"]
-        r = packages.init_file.__func__(
-            packages, pid, "bulk-a.txt"
-        ) if False else packages._post(
-            f"/api/packages/{pid}/draft/files",
-            json=[{"key": "bulk-a.txt"}, {"key": "bulk-b.txt"}, {"key": "bulk-c.txt"}],
+        r = (
+            packages.init_file.__func__(packages, pid, "bulk-a.txt")
+            if False
+            else packages._post(
+                f"/api/packages/{pid}/draft/files",
+                json=[
+                    {"key": "bulk-a.txt"},
+                    {"key": "bulk-b.txt"},
+                    {"key": "bulk-c.txt"},
+                ],
+            )
         )
         assert_ok(r, 201)
 
@@ -244,8 +246,8 @@ class TestPackageFileUpload:
 # Resource association
 # ---------------------------------------------------------------------------
 
-class TestPackageResourceAssociation:
 
+class TestPackageResourceAssociation:
     @pytest.fixture()
     def pkg_and_res(
         self,
@@ -343,6 +345,7 @@ class TestPackageResourceAssociation:
 # ---------------------------------------------------------------------------
 # Resources import from previous version
 # ---------------------------------------------------------------------------
+
 
 class TestPackageResourcesImport:
     """

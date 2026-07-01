@@ -9,7 +9,7 @@ Tests never construct URLs directly.
 
 from __future__ import annotations
 
-from requests import Response, Session
+from requests import Response
 
 from client.base import BaseClient
 
@@ -44,7 +44,9 @@ class ResourcesClient(BaseClient):
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/records with full pagination support."""
-        return self._get("/api/records", params={"q": query, "page": page, "size": size})
+        return self._get(
+            "/api/records", params={"q": query, "page": page, "size": size}
+        )
 
     # ------------------------------------------------------------------
     # Draft management
@@ -102,13 +104,9 @@ class ResourcesClient(BaseClient):
 
     def commit_file(self, record_id: str, filename: str) -> Response:
         """POST /api/records/{id}/draft/files/{filename}/commit — finalise upload."""
-        return self._post(
-            f"/api/records/{record_id}/draft/files/{filename}/commit"
-        )
+        return self._post(f"/api/records/{record_id}/draft/files/{filename}/commit")
 
-    def upload_file(
-        self, record_id: str, filename: str, content: bytes
-    ) -> None:
+    def upload_file(self, record_id: str, filename: str, content: bytes) -> None:
         """
         Full 3-step upload: init → content → commit.
         Raises AssertionError at the first failing step.

@@ -84,9 +84,4 @@ class DOIClient(BaseClient):
 
         InvenioRDM stores it at: draft["pids"]["doi"]["identifier"]
         """
-        return (
-            draft
-            .get("pids", {})
-            .get("doi", {})
-            .get("identifier")
-        )
+        return draft.get("pids", {}).get("doi", {}).get("identifier")

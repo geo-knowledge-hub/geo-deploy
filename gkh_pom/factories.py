@@ -19,6 +19,7 @@ import uuid
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _uid() -> str:
     """Short unique suffix for generated titles / slugs."""
     return uuid.uuid4().hex[:8]
@@ -28,6 +29,7 @@ def _uid() -> str:
 # Knowledge Resource factories
 # (POST /api/records)
 # ---------------------------------------------------------------------------
+
 
 def make_resource_payload(
     title: str | None = None,
@@ -114,6 +116,7 @@ def make_resource_full_metadata(title: str | None = None) -> dict:
 # (POST /api/packages)
 # ---------------------------------------------------------------------------
 
+
 def make_package_payload(
     title: str | None = None,
     with_files: bool = False,
@@ -160,6 +163,7 @@ def make_package_payload_with_files(title: str | None = None) -> dict:
 # Community factories
 # (POST /api/communities)
 # ---------------------------------------------------------------------------
+
 
 def make_community_payload(title: str | None = None) -> dict:
     """

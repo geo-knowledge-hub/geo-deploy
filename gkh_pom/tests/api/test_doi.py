@@ -37,6 +37,7 @@ from fixtures import assert_ok
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def doi(http: Session, base_url: str) -> DOIClient:
     return DOIClient(http, base_url)
@@ -64,8 +65,8 @@ def _doi_supported(r) -> bool:
 # Resource DOI tests
 # ---------------------------------------------------------------------------
 
-class TestResourceDOI:
 
+class TestResourceDOI:
     def test_reserve_doi_for_resource(
         self, doi: DOIClient, resources: ResourcesClient
     ) -> None:
@@ -181,9 +182,7 @@ class TestResourceDOI:
 
         # Confirm DOI is present in the published record
         published_doi = doi.extract_doi(r_pub.json())
-        assert published_doi is not None, (
-            "Expected DOI in published record"
-        )
+        assert published_doi is not None, "Expected DOI in published record"
 
     def test_publish_without_doi(self, resources: ResourcesClient) -> None:
         """
@@ -205,6 +204,7 @@ class TestResourceDOI:
         The record is created with a pre-existing DOI from another system.
         """
         import uuid
+
         external_doi = f"10.9999/pytest-{uuid.uuid4().hex[:8]}"
 
         payload = make_resource_payload()
@@ -218,9 +218,7 @@ class TestResourceDOI:
         r = resources.create_draft(payload)
 
         if r.status_code == 400:
-            pytest.skip(
-                f"External DOI not accepted by this instance: {r.text[:200]}"
-            )
+            pytest.skip(f"External DOI not accepted by this instance: {r.text[:200]}")
 
         assert_ok(r, 201)
         rid = r.json()["id"]
@@ -229,12 +227,7 @@ class TestResourceDOI:
             # Confirm the external DOI was stored
             r_draft = resources.get_draft(rid)
             assert_ok(r_draft, 200)
-            stored_doi = doi_val = (
-                r_draft.json()
-                .get("pids", {})
-                .get("doi", {})
-                .get("identifier")
-            )
+            stored_doi = r_draft.json().get("pids", {}).get("doi", {}).get("identifier")
             assert stored_doi == external_doi, (
                 f"Expected {external_doi}, got {stored_doi}"
             )
@@ -249,8 +242,8 @@ class TestResourceDOI:
 # Package DOI tests
 # ---------------------------------------------------------------------------
 
-class TestPackageDOI:
 
+class TestPackageDOI:
     def test_reserve_doi_for_package(
         self, doi: DOIClient, packages: PackagesClient
     ) -> None:
