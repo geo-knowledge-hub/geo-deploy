@@ -1,0 +1,10 @@
+# Never commit secrets
+.env
+
+# pytest cache
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# HTML reports
+report.html
