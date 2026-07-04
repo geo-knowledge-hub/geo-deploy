@@ -32,7 +32,7 @@ Every endpoint from the official GEO Knowledge Hub API documentation:
 ## Project Structure
 
 ```
-gkh_pom/
+geo-deploy/
 │
 ├── .env                   # Your private settings (never commit this)
 ├── .env.example           # Template showing what goes in .env
@@ -150,7 +150,7 @@ uv add pytest requests python-dotenv pytest-html
 6. Click **Create** and copy the token immediately (shown only once)
 
 ### Step 4 — Create your `.env` file
-Create a file named `.env` in the `gkh_pom/` folder with this content:
+Create a file named `.env` in the `geo-deploy/` folder with this content:
 
 ```
 GEO_API_TOKEN=paste_your_token_here
@@ -169,7 +169,7 @@ What each variable does:
   the suite skips certificate verification so HTTPS connections succeed.
 
 ### Step 5 — Create `pytest.ini`
-Create a file named `pytest.ini` in the `gkh_pom/` folder:
+Create a file named `pytest.ini` in the `geo-deploy/` folder:
 
 ```ini
 [pytest]
@@ -181,12 +181,12 @@ What each line does:
 - `testpaths = tests` — tells pytest to look for tests inside the `tests/`
   folder only. Without this, pytest searches everywhere and may pick up
   unintended files.
-- `pythonpath = .` — adds the `gkh_pom/` folder to Python's import path.
+- `pythonpath = .` — adds the `geo-deploy/` folder to Python's import path.
   This allows `conftest.py` to import `fixtures.py` and `factories.py`
   regardless of which subfolder pytest is currently collecting from.
 
 ### Step 6 — Create `.gitignore`
-Create a file named `.gitignore` in the `gkh_pom/` folder:
+Create a file named `.gitignore` in the `geo-deploy/` folder:
 
 ```
 # Never commit secrets
@@ -205,10 +205,10 @@ The `.env` file contains your API token which is a secret. This file ensures
 it is never accidentally committed to Git and shared with others.
 
 ### Step 7 — Verify the structure
-Your `gkh_pom/` folder should look like this:
+Your `geo-deploy/` folder should look like this:
 
 ```
-gkh_pom/
+geo-deploy/
 ├── .env            ← created in Step 4
 ├── .gitignore      ← created in Step 6
 ├── pytest.ini      ← created in Step 5
@@ -243,10 +243,10 @@ gkh_pom/
 
 ## Running Tests
 
-Always run from inside the `gkh_pom/` folder:
+Always run from inside the `geo-deploy/` folder:
 
 ```powershell
-cd gkh_pom
+cd geo-deploy
 ```
 
 ### Run everything
