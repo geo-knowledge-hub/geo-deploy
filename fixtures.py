@@ -190,7 +190,10 @@ def package_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
     Fresh metadata-only Package draft, deleted after each test.
     """
-    r = http.post(f"{base_url}/api/packages", json=make_package_payload())
+    r = http.post(
+        f"{base_url}/api/packages",
+        json=make_package_payload(),
+    )
     assert r.status_code == 201, f"Failed to create package draft: {r.text}"
     data = r.json()
     yield data
@@ -221,7 +224,10 @@ def published_package(http: Session, base_url: str) -> Generator[dict, None, Non
     Create, reserve DOI, and publish ONE Package for the entire test run.
     DOI is required on this instance (marked * in the UI).
     """
-    r = http.post(f"{base_url}/api/packages", json=make_package_payload())
+    r = http.post(
+        f"{base_url}/api/packages",
+        json=make_package_payload(),
+    )
     assert r.status_code == 201, f"Failed to create package draft: {r.text}"
     pid = r.json()["id"]
 
@@ -248,7 +254,10 @@ def community(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
     Create a Community before the test, delete it after.
     """
-    r = http.post(f"{base_url}/api/communities", json=make_community_payload())
+    r = http.post(
+        f"{base_url}/api/communities",
+        json=make_community_payload(),
+    )
     assert r.status_code == 201, f"Failed to create community: {r.text}"
     data = r.json()
     yield data
