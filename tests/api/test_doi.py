@@ -26,11 +26,11 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from client.doi import DOIClient
-from client.resources import ResourcesClient
-from client.packages import PackagesClient
-from factories import make_resource_payload, make_package_payload
-from fixtures import assert_ok
+from geodeploy.doi import DOIClient
+from geodeploy.resources import ResourcesClient
+from geodeploy.packages import PackagesClient
+from tests.factories import make_resource_payload, make_package_payload
+from tests.fixtures import assert_ok
 
 
 # ---------------------------------------------------------------------------

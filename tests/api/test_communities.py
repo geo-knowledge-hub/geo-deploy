@@ -10,9 +10,9 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from client.communities import CommunitiesClient
-from factories import make_community_payload
-from fixtures import assert_ok
+from geodeploy.communities import CommunitiesClient
+from tests.factories import make_community_payload
+from tests.fixtures import assert_ok
 
 
 @pytest.fixture()

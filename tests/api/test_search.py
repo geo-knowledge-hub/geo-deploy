@@ -18,8 +18,8 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from client.search import SearchClient
-from fixtures import assert_ok
+from geodeploy.search import SearchClient
+from tests.fixtures import assert_ok
 
 
 @pytest.fixture()

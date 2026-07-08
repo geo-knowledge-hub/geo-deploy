@@ -9,7 +9,7 @@ from __future__ import annotations
 import requests
 from requests import Session
 
-from fixtures import assert_ok
+from tests.fixtures import assert_ok
 
 
 class TestLoginPage:
