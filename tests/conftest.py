@@ -33,18 +33,32 @@ from tests.factories import *  # noqa: F401, F403
 #   1. CLI flag         --api-token "xyz"   (always wins)
 #   2. Shell env var    $env:GEO_API_TOKEN  (already set in the shell)
 #   3. .env file        GEO_API_TOKEN=xyz   (loaded here)
+#
+# Search is upward from this file's directory so conftest.py can live at
+# any depth (project root, tests/, tests/ui/, etc.) without breaking the
+# .env lookup if it's ever moved again.
 # ---------------------------------------------------------------------------
+def _find_env_file(start: Path) -> Path | None:
+    """Walk upward from `start` looking for a .env file."""
+    for parent in [start, *start.parents]:
+        candidate = parent / ".env"
+        if candidate.exists():
+            return candidate
+    return None
+
+
 try:
     from dotenv import load_dotenv
 
-    _env_file = Path(__file__).parent / ".env"
-    if _env_file.exists():
+    _env_file = _find_env_file(Path(__file__).parent)
+    if _env_file is not None:
         load_dotenv(_env_file)
         print(f"\n[conftest] Loaded environment from {_env_file}")
     else:
         print(
-            f"\n[conftest] No .env file found at {_env_file}. "
-            "Create one to avoid passing --api-token on every run."
+            "\n[conftest] No .env file found in any parent directory of "
+            f"{Path(__file__).parent}. Create one to avoid passing "
+            "--api-token on every run."
         )
 except ImportError:
     print(
