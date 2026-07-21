@@ -306,82 +306,7 @@ tests/api/test_packages.py::TestPackageDraft::test_update_draft FAILED    [  7%]
 | `SKIPPED` | Test was intentionally skipped (e.g. DOI provider not configured) |
 | `[ 7%]` | Progress indicator — how far through the total test run you are |
 
----
 
-## Adding a New Test
-
-1. Open the relevant file in `tests/api/` or `tests/ui/`
-2. Inject the client fixture you need
-3. Call client methods — never write URLs directly in test functions
-4. Assert on the response
-
-```python
-def test_my_new_test(
-    self,
-    packages: PackagesClient,
-    package_draft: dict,
-) -> None:
-    # Call a client method — not a raw URL
-    r = packages.get_draft(package_draft["id"])
-
-    # Assert on the result
-    assert_ok(r, 200)
-    assert r.json()["metadata"]["title"] is not None
-```
-
----
-
-## Adding a New API Endpoint
-
-1. Open the relevant file in `client/`
-2. Add a method using `self._get`, `self._post`, `self._put`, or `self._delete`
-3. Call it from your test
-
-```python
-# In client/packages.py
-def my_new_endpoint(self, package_id: str) -> Response:
-    """GET /api/packages/{id}/something-new"""
-    return self._get(f"/api/packages/{package_id}/something-new")
-```
-
-No URLs ever appear in test files.
-
----
-
-## Changing a Required Metadata Field
-
-If the API starts requiring a new field (e.g. `language`), add it to `factories.py`:
-
-```python
-def make_resource_payload(title=None):
-    return {
-        "metadata": {
-            "title": title or f"pytest-resource-{_uid()}",
-            "language": "eng",   # add new required field here
-            ...
-        }
-    }
-```
-
-One change in `factories.py` applies to every test that creates a resource.
-
----
-
-## Why Published Records Accumulate on the Server
-
-InvenioRDM does not allow hard-deleting published records via the public API.
-Only draft records can be deleted. This means every time a test publishes a
-record, it remains on the server permanently.
-
-To keep accumulation low:
-- The `published_resource` and `published_package` fixtures are session-scoped,
-  meaning they create **one** published record per test run and reuse it across
-  all tests that need a published record
-- Tests that specifically test the publish action create one additional record each
-- Per full test run, approximately **5 to 8** published records are created
-
-These records are named with the `pytest-` prefix. They can be identified and
-deleted manually from the GKH admin interface if needed.
 
 ---
 
@@ -395,23 +320,5 @@ deleted manually from the GKH admin interface if needed.
 
 ---
 
-## Spatial Search Bounding Box Reference
 
-The search client supports spatial filtering using a bounding box defined by
-four coordinates — west, south, east, north — in decimal degrees (WGS84).
-
-| Location | West | South | East | North |
-|---|---|---|---|---|
-| Ghana | -3.26 | 4.74 | 1.19 | 11.17 |
-| Northern Ghana | -2.50 | 8.50 | 0.20 | 11.20 |
-| Tamale | -0.849 | 9.393 | -0.829 | 9.413 |
-| Accra | -0.197 | 5.593 | -0.177 | 5.613 |
-| Africa | -20.00 | -35.00 | 55.00 | 38.00 |
-| Global | -180.00 | -90.00 | 180.00 | 90.00 |
-
-**Note:** This instance uses the `bounds` parameter for spatial search.
-The standard `bbox` parameter causes a 500 error on this instance and must
-not be used.
-
----
 
