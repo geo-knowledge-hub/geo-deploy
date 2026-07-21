@@ -1,16 +1,16 @@
-"""
-tests/api/test_resources.py
-===========================
-Tests for the Knowledge Resource API lifecycle.
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-Based on the official GEO Knowledge Hub documentation:
-  POST /api/records          → create draft
-  PUT  /api/records/{id}/draft → update metadata
-  POST /api/records/{id}/draft/actions/publish → publish
-  POST /api/records/{id}/versions → new version
+"""Module resources test"""
 
-All API calls go through ResourcesClient — tests never build URLs directly.
-"""
+
+
 
 from __future__ import annotations
 

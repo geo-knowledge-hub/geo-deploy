@@ -1,16 +1,16 @@
-"""
-conftest.py
-===========
-Intentionally thin. Responsibilities:
-  - Load .env file automatically (python-dotenv)
-  - Register CLI options
-  - Apply SSL bypass at process start (pytest_configure)
-  - Re-export fixtures so pytest discovers them from any subfolder
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-All fixtures  → fixtures.py
-All factories → factories.py
-All API logic → client/
-"""
+"""Module conftest"""
+
+
+
 
 from __future__ import annotations
 

@@ -1,9 +1,16 @@
-"""
-tests/api/test_drafts.py
-========================
-Focused tests on draft behaviour for both Packages and Resources.
-Verifies draft visibility, persistence, and lifecycle rules.
-"""
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
+
+"""Module draft test"""
+
+
+
 
 from __future__ import annotations
 

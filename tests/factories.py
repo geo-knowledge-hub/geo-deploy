@@ -1,14 +1,15 @@
-"""
-factories.py
-============
-Pure data factories — no HTTP calls, no pytest, no side effects.
-Each function returns a dict that can be sent directly as a JSON body.
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-Based on the official GEO Knowledge Hub API documentation:
-  https://gkhub.earthobservations.org
+"""Module factories"""
 
-To add a new record type or change required fields, edit only this file.
-"""
+
 
 from __future__ import annotations
 

@@ -1,16 +1,16 @@
-"""
-client/search.py
-================
-SearchClient — unified cross-entity search (/api/search).
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-Spatial search notes for this instance (179.237.84.212):
-  - "bbox"  → 500 Internal Server Error (broken on this instance)
-  - "bounds" → 200 OK  ✓  (used here as primary parameter)
-  - Other working aliases: spatial, geobbox, geo_bbox, bounding_box, envelope
+"""Module SearchClient"""
 
-Bounding box format: "west,south,east,north" (decimal degrees, WGS84)
-Example for Ghana: "-3.26,4.74,1.19,11.17"
-"""
+
+
 
 from __future__ import annotations
 

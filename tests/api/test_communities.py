@@ -1,9 +1,15 @@
-"""
-tests/api/test_communities.py
-=============================
-Tests for the Communities API.
-All calls go through CommunitiesClient.
-"""
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
+
+"""Module communities API test"""
+
+
 
 from __future__ import annotations
 

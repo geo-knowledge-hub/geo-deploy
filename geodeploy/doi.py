@@ -1,22 +1,16 @@
-"""
-client/doi.py
-=============
-DOIClient — all API calls related to Digital Object Identifiers.
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-InvenioRDM DOI workflow:
-  1. Reserve a DOI  → POST /api/records/{id}/draft/pids/doi
-  2. Discard a DOI  → DELETE /api/records/{id}/draft/pids/doi
-  3. Publish        → POST /api/records/{id}/draft/actions/publish
-                      (DOI is registered/minted at this point)
+"""Module DOIClient"""
 
-The same endpoints exist for packages:
-  POST   /api/packages/{id}/draft/pids/doi
-  DELETE /api/packages/{id}/draft/pids/doi
 
-External DOI (user already has one):
-  Include it in the metadata payload at creation time:
-  "pids": {"doi": {"identifier": "10.xxxx/xxxxx", "provider": "external"}}
-"""
+
 
 from __future__ import annotations
 

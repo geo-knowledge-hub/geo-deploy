@@ -1,25 +1,13 @@
-"""
-tests/api/test_doi.py
-=====================
-Tests for Digital Object Identifier (DOI) workflows.
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-Three scenarios covered:
-  1. Publish without a DOI (no reservation made)
-  2. Reserve a DOI before publishing (most common workflow)
-  3. Provide an external DOI at record creation
-
-DOI lifecycle:
-  create draft → reserve DOI → (include DOI in files) → publish
-                                                         ↑
-                                            DOI is registered here
-
-Important notes:
-  - A reserved DOI is NOT yet public — it only becomes registered on publish
-  - A reserved but unpublished DOI can be discarded (deleted) freely
-  - Once published, the DOI cannot be changed or removed
-  - If the instance has no DOI provider configured, reserve returns 400/501
-    and all DOI tests are skipped gracefully
-"""
+"""Module doi test"""
 
 from __future__ import annotations
 

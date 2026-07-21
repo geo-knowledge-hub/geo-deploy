@@ -1,17 +1,16 @@
-"""
-tests/api/test_search.py
-========================
-Tests for the unified /api/search endpoint.
+# -*- coding: utf-8 -*-
+#
+# This file is part of GEO Knowledge Hub.
+# Copyright 2020-2021 GEO Secretariat.
+#
+# GEO Knowledge Hub is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+#
 
-Covers
-------
-- Full-text search
-- Pagination
-- Spatial bounding box search
-- Point-based search
-- Resource type filtering
-- Combined search (text + spatial + type)
-"""
+"""Module search test"""
+
+
+
 
 from __future__ import annotations
 
