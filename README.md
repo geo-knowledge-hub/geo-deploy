@@ -168,76 +168,6 @@ What each variable does:
   TLS certificate (common for local or Kubernetes deployments). When `true`,
   the suite skips certificate verification so HTTPS connections succeed.
 
-### Step 5 — Create `pytest.ini`
-Create a file named `pytest.ini` in the `geo-deploy/` folder:
-
-```ini
-[pytest]
-testpaths = tests
-pythonpath = .
-```
-
-What each line does:
-- `testpaths = tests` — tells pytest to look for tests inside the `tests/`
-  folder only. Without this, pytest searches everywhere and may pick up
-  unintended files.
-- `pythonpath = .` — adds the `geo-deploy/` folder to Python's import path.
-  This allows `conftest.py` to import `fixtures.py` and `factories.py`
-  regardless of which subfolder pytest is currently collecting from.
-
-### Step 6 — Create `.gitignore`
-Create a file named `.gitignore` in the `geo-deploy/` folder:
-
-```
-# Never commit secrets
-.env
-
-# pytest and Python cache
-.pytest_cache/
-__pycache__/
-*.pyc
-
-# HTML reports
-report.html
-```
-
-The `.env` file contains your API token which is a secret. This file ensures
-it is never accidentally committed to Git and shared with others.
-
-### Step 7 — Verify the structure
-Your `geo-deploy/` folder should look like this:
-
-```
-geo-deploy/
-├── .env            ← created in Step 4
-├── .gitignore      ← created in Step 6
-├── pytest.ini      ← created in Step 5
-├── conftest.py
-├── fixtures.py
-├── factories.py
-├── client/
-│   ├── __init__.py
-│   ├── base.py
-│   ├── communities.py
-│   ├── doi.py
-│   ├── packages.py
-│   ├── resources.py
-│   └── search.py
-└── tests/
-    ├── __init__.py
-    ├── api/
-    │   ├── __init__.py
-    │   ├── test_communities.py
-    │   ├── test_doi.py
-    │   ├── test_drafts.py
-    │   ├── test_packages.py
-    │   ├── test_resources.py
-    │   └── test_search.py
-    └── ui/
-        ├── __init__.py
-        ├── test_homepage.py
-        └── test_login.py
-```
 
 ---
 
@@ -290,25 +220,7 @@ CLI flags always take priority over `.env` values.
 
 ---
 
-## Understanding the Output
 
-```
-tests/api/test_packages.py::TestPackageDraft::test_create_draft PASSED   [  5%]
-tests/api/test_packages.py::TestPackageDraft::test_get_draft PASSED       [  6%]
-tests/api/test_packages.py::TestPackageDraft::test_update_draft FAILED    [  7%]
-```
-
-| Symbol | Meaning |
-|---|---|
-| `PASSED` | Test ran and all assertions were correct |
-| `FAILED` | Test ran but at least one assertion was wrong |
-| `ERROR` | Test could not run — usually a fixture setup problem |
-| `SKIPPED` | Test was intentionally skipped (e.g. DOI provider not configured) |
-| `[ 7%]` | Progress indicator — how far through the total test run you are |
-
-
-
----
 
 ## Environment Variables Reference
 
