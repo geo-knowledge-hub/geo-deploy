@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,8 +7,6 @@
 #
 
 """Module CommunitiesClient"""
-
-
 
 from __future__ import annotations
 
@@ -21,20 +18,22 @@ from geodeploy.base import BaseClient
 class CommunitiesClient(BaseClient):
     """Page Object for the Communities API."""
 
+    base_path = "/api/communities"
+
     def list(self, size: int = 5, query: str = "") -> Response:
         """GET /api/communities — list communities."""
         params = {"size": size}
         if query:
             params["q"] = query
-        return self._get("/api/communities", params=params)
+        return self._get(self._resource_path(), params=params)
 
     def get(self, community_id: str) -> Response:
         """GET /api/communities/{id} — get by ID or slug."""
-        return self._get(f"/api/communities/{community_id}")
+        return self._get(self._resource_path(community_id))
 
     def create(self, payload: dict) -> Response:
         """POST /api/communities — create a community."""
-        return self._post("/api/communities", json=payload)
+        return self._post(self._resource_path(), json=payload)
 
     def update(self, community_id: str, payload: dict) -> Response:
         """
@@ -42,7 +41,7 @@ class CommunitiesClient(BaseClient):
         Sends the full fetched payload including slug — this instance
         requires slug to be present (unlike older versions that rejected it).
         """
-        return self._put(f"/api/communities/{community_id}", json=payload)
+        return self._put(self._resource_path(community_id), json=payload)
 
     def fetch_and_update_title(self, community_id: str, new_title: str) -> Response:
         """
@@ -57,19 +56,19 @@ class CommunitiesClient(BaseClient):
 
     def delete(self, community_id: str) -> Response:
         """DELETE /api/communities/{id}."""
-        return self._delete(f"/api/communities/{community_id}")
+        return self._delete(self._resource_path(community_id))
 
     def list_members(self, community_id: str) -> Response:
         """GET /api/communities/{id}/members."""
-        return self._get(f"/api/communities/{community_id}/members")
+        return self._get(self._resource_path(community_id, "members"))
 
     def list_public_members(self, community_id: str) -> Response:
         """GET /api/communities/{id}/members/public."""
-        return self._get(f"/api/communities/{community_id}/members/public")
+        return self._get(self._resource_path(community_id, "members", "public"))
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/communities with pagination."""
         return self._get(
-            "/api/communities",
+            self._resource_path(),
             params={"q": query, "page": page, "size": size},
         )

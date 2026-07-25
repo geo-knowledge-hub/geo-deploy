@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -9,9 +8,6 @@
 
 """Module conftest"""
 
-
-
-
 from __future__ import annotations
 
 import os
@@ -21,8 +17,10 @@ from pathlib import Path
 
 import pytest
 import urllib3
-from tests.fixtures import *  # noqa: F401, F403
-from tests.factories import *  # noqa: F401, F403
+
+from tests.factories import *
+from tests.fixtures import *
+
 
 # ---------------------------------------------------------------------------
 # Load .env file from the project root before anything else runs.

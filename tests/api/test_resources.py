@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -9,18 +8,15 @@
 
 """Module resources test"""
 
-
-
-
 from __future__ import annotations
 
 import pytest
 from requests import Session
 
+from geodeploy.doi import DOIClient
 from geodeploy.resources import ResourcesClient
 from tests.factories import make_resource_payload
 from tests.fixtures import assert_ok
-
 
 # ---------------------------------------------------------------------------
 # Client fixture — function-scoped so each test gets a clean client object
@@ -144,7 +140,7 @@ class TestResourcePublish:
         r = resources.create_draft(make_resource_payload())
         assert_ok(r, 201)
         rid = r.json()["id"]
-        http.post(f"{base_url}/api/records/{rid}/draft/pids/doi")
+        DOIClient(http, base_url).reserve_doi_for_record(rid)
         r_pub = resources.publish(rid)
         assert_ok(r_pub, 202)
         data = r_pub.json()

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -9,9 +8,6 @@
 
 """Module DOIClient"""
 
-
-
-
 from __future__ import annotations
 
 from requests import Response
@@ -20,7 +16,18 @@ from geodeploy.base import BaseClient
 
 
 class DOIClient(BaseClient):
-    """Page Object for DOI reservation and management."""
+    """
+    Page Object for DOI reservation and management.
+
+    Spans two resource types (Knowledge Records and Knowledge Packages),
+    so unlike the other clients it can't rely on a single class-level
+    `base_path`. Instead each group of methods builds its path off one
+    of the two constants below via `self._path(...)` — the record/package
+    id is never hand-typed into a URL string.
+    """
+
+    _RECORDS_BASE = "api/records"
+    _PACKAGES_BASE = "api/packages"
 
     # ------------------------------------------------------------------
     # Records (Knowledge Resources)
@@ -33,21 +40,25 @@ class DOIClient(BaseClient):
         The DOI is only registered (made public) when the record is published.
         Returns the reserved DOI identifier in the response.
         """
-        return self._post(f"/api/records/{record_id}/draft/pids/doi")
+        return self._post(
+            self._path(self._RECORDS_BASE, record_id, "draft", "pids", "doi")
+        )
 
     def discard_doi_for_record(self, record_id: str) -> Response:
         """
         DELETE /api/records/{id}/draft/pids/doi
         Releases a reserved DOI that has not yet been published.
         """
-        return self._delete(f"/api/records/{record_id}/draft/pids/doi")
+        return self._delete(
+            self._path(self._RECORDS_BASE, record_id, "draft", "pids", "doi")
+        )
 
     def get_record_pids(self, record_id: str) -> Response:
         """
         GET /api/records/{id}/draft
         Returns full draft including pids block where DOI lives.
         """
-        return self._get(f"/api/records/{record_id}/draft")
+        return self._get(self._path(self._RECORDS_BASE, record_id, "draft"))
 
     # ------------------------------------------------------------------
     # Packages (Knowledge Packages)
@@ -58,14 +69,18 @@ class DOIClient(BaseClient):
         POST /api/packages/{id}/draft/pids/doi
         Reserves a DOI for a Knowledge Package draft.
         """
-        return self._post(f"/api/packages/{package_id}/draft/pids/doi")
+        return self._post(
+            self._path(self._PACKAGES_BASE, package_id, "draft", "pids", "doi")
+        )
 
     def discard_doi_for_package(self, package_id: str) -> Response:
         """
         DELETE /api/packages/{id}/draft/pids/doi
         Releases a reserved DOI for a Knowledge Package.
         """
-        return self._delete(f"/api/packages/{package_id}/draft/pids/doi")
+        return self._delete(
+            self._path(self._PACKAGES_BASE, package_id, "draft", "pids", "doi")
+        )
 
     # ------------------------------------------------------------------
     # Helpers

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,8 +7,6 @@
 #
 
 """Module ResourcesClient"""
-
-
 
 from __future__ import annotations
 
@@ -27,6 +24,8 @@ class ResourcesClient(BaseClient):
         r = resources.create_draft(payload)
     """
 
+    base_path = "/api/records"
+
     # ------------------------------------------------------------------
     # Search & discovery
     # ------------------------------------------------------------------
@@ -36,20 +35,20 @@ class ResourcesClient(BaseClient):
         params = {"size": size}
         if query:
             params["q"] = query
-        return self._get("/api/records", params=params)
+        return self._get(self._resource_path(), params=params)
 
     def get_published(self, record_id: str) -> Response:
         """GET /api/records/{id} — get a single published resource."""
-        return self._get(f"/api/records/{record_id}")
+        return self._get(self._resource_path(record_id))
 
     def list_user_records(self, size: int = 5) -> Response:
         """GET /api/user/records — current user's records."""
-        return self._get("/api/user/records", params={"size": size})
+        return self._get(self._path("api", "user", "records"), params={"size": size})
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/records with full pagination support."""
         return self._get(
-            "/api/records", params={"q": query, "page": page, "size": size}
+            self._resource_path(), params={"q": query, "page": page, "size": size}
         )
 
     # ------------------------------------------------------------------
@@ -58,22 +57,22 @@ class ResourcesClient(BaseClient):
 
     def create_draft(self, payload: dict) -> Response:
         """POST /api/records — create a new resource draft."""
-        return self._post("/api/records", json=payload)
+        return self._post(self._resource_path(), json=payload)
 
     def get_draft(self, record_id: str) -> Response:
         """GET /api/records/{id}/draft — retrieve a draft."""
-        return self._get(f"/api/records/{record_id}/draft")
+        return self._get(self._resource_path(record_id, "draft"))
 
     def update_draft(self, record_id: str, payload: dict) -> Response:
         """
         PUT /api/records/{id}/draft — update draft metadata.
         Best practice: fetch the current draft first, mutate, then PUT.
         """
-        return self._put(f"/api/records/{record_id}/draft", json=payload)
+        return self._put(self._resource_path(record_id, "draft"), json=payload)
 
     def delete_draft(self, record_id: str) -> Response:
         """DELETE /api/records/{id}/draft — discard a draft."""
-        return self._delete(f"/api/records/{record_id}/draft")
+        return self._delete(self._resource_path(record_id, "draft"))
 
     def fetch_and_update_title(self, record_id: str, new_title: str) -> Response:
         """
@@ -93,7 +92,7 @@ class ResourcesClient(BaseClient):
     def init_file(self, record_id: str, filename: str) -> Response:
         """POST /api/records/{id}/draft/files — declare a file upload."""
         return self._post(
-            f"/api/records/{record_id}/draft/files",
+            self._resource_path(record_id, "draft", "files"),
             json=[{"key": filename}],
         )
 
@@ -102,13 +101,15 @@ class ResourcesClient(BaseClient):
     ) -> Response:
         """PUT /api/records/{id}/draft/files/{filename}/content — upload bytes."""
         return self._put_binary(
-            f"/api/records/{record_id}/draft/files/{filename}/content",
+            self._resource_path(record_id, "draft", "files", filename, "content"),
             content,
         )
 
     def commit_file(self, record_id: str, filename: str) -> Response:
         """POST /api/records/{id}/draft/files/{filename}/commit — finalise upload."""
-        return self._post(f"/api/records/{record_id}/draft/files/{filename}/commit")
+        return self._post(
+            self._resource_path(record_id, "draft", "files", filename, "commit")
+        )
 
     def upload_file(self, record_id: str, filename: str, content: bytes) -> None:
         """
@@ -121,11 +122,11 @@ class ResourcesClient(BaseClient):
 
     def list_files(self, record_id: str) -> Response:
         """GET /api/records/{id}/draft/files — list files on a draft."""
-        return self._get(f"/api/records/{record_id}/draft/files")
+        return self._get(self._resource_path(record_id, "draft", "files"))
 
     def delete_file(self, record_id: str, filename: str) -> Response:
         """DELETE /api/records/{id}/draft/files/{filename} — remove a file."""
-        return self._delete(f"/api/records/{record_id}/draft/files/{filename}")
+        return self._delete(self._resource_path(record_id, "draft", "files", filename))
 
     # ------------------------------------------------------------------
     # Publish & versions
@@ -133,12 +134,12 @@ class ResourcesClient(BaseClient):
 
     def publish(self, record_id: str) -> Response:
         """POST /api/records/{id}/draft/actions/publish — publish a draft."""
-        return self._post(f"/api/records/{record_id}/draft/actions/publish")
+        return self._post(self._resource_path(record_id, "draft", "actions", "publish"))
 
     def list_versions(self, record_id: str) -> Response:
         """GET /api/records/{id}/versions — list all versions."""
-        return self._get(f"/api/records/{record_id}/versions")
+        return self._get(self._resource_path(record_id, "versions"))
 
     def create_new_version(self, record_id: str) -> Response:
         """POST /api/records/{id}/versions — open a new version draft."""
-        return self._post(f"/api/records/{record_id}/versions")
+        return self._post(self._resource_path(record_id, "versions"))

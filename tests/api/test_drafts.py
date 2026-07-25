@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,9 +7,6 @@
 #
 
 """Module draft test"""
-
-
-
 
 from __future__ import annotations
 
@@ -38,7 +34,7 @@ class TestPackageDraftBehaviour:
         assert package_draft.get("is_draft") is True
 
     def test_new_draft_has_id(self, package_draft: dict) -> None:
-        assert "id" in package_draft and package_draft["id"]
+        assert package_draft.get("id")
 
     def test_draft_not_visible_in_public_search(
         self, packages: PackagesClient, package_draft: dict
@@ -93,7 +89,7 @@ class TestResourceDraftBehaviour:
         assert resource_draft.get("is_draft") is True
 
     def test_new_draft_has_id(self, resource_draft: dict) -> None:
-        assert "id" in resource_draft and resource_draft["id"]
+        assert resource_draft.get("id")
 
     def test_draft_not_visible_in_public_search(
         self, resources: ResourcesClient, resource_draft: dict

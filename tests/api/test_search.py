@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,9 +7,6 @@
 #
 
 """Module search test"""
-
-
-
 
 from __future__ import annotations
 

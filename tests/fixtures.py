@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -9,15 +8,19 @@
 
 """Module fixtures"""
 
-
 from __future__ import annotations
 
 import os
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
-from requests import Response, Session
+from requests import Session
 
+from geodeploy.base import BaseClient
+from geodeploy.communities import CommunitiesClient
+from geodeploy.doi import DOIClient
+from geodeploy.packages import PackagesClient
+from geodeploy.resources import ResourcesClient
 from tests.factories import (
     make_community_payload,
     make_package_payload,
@@ -25,7 +28,6 @@ from tests.factories import (
     make_resource_payload,
     make_resource_payload_with_files,
 )
-
 
 # ---------------------------------------------------------------------------
 # Core session fixtures
@@ -121,14 +123,12 @@ def resource_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
     Create a fresh metadata-only Resource draft before the test,
     delete it after the test completes (pass or fail).
     """
-    r = http.post(
-        f"{base_url}/api/records",
-        json=make_resource_payload(),
-    )
+    resources = ResourcesClient(http, base_url)
+    r = resources.create_draft(make_resource_payload())
     assert r.status_code == 201, f"Failed to create resource draft: {r.text}"
     data = r.json()
     yield data
-    http.delete(f"{base_url}/api/records/{data['id']}/draft")
+    resources.delete_draft(data["id"])
 
 
 @pytest.fixture()
@@ -139,16 +139,12 @@ def resource_draft_with_files(
     Resource draft with file uploads enabled.
     Use this fixture in upload tests.
     """
-    r = http.post(
-        f"{base_url}/api/records",
-        json=make_resource_payload_with_files(),
-    )
+    resources = ResourcesClient(http, base_url)
+    r = resources.create_draft(make_resource_payload_with_files())
     assert r.status_code == 201, f"Failed to create resource draft (files): {r.text}"
     data = r.json()
     yield data
-    http.delete(
-        f"{base_url}/api/records/{data['id']}/draft",
-    )
+    resources.delete_draft(data["id"])
 
 
 @pytest.fixture(scope="session")
@@ -157,22 +153,20 @@ def published_resource(http: Session, base_url: str) -> Generator[dict, None, No
     Create, reserve DOI, and publish ONE Resource for the entire test run.
     DOI is required on this instance (marked * in the UI).
     """
-    r = http.post(
-        f"{base_url}/api/records",
-        json=make_resource_payload(),
-    )
+    resources = ResourcesClient(http, base_url)
+    doi = DOIClient(http, base_url)
+
+    r = resources.create_draft(make_resource_payload())
     assert r.status_code == 201, f"Failed to create resource draft: {r.text}"
     rid = r.json()["id"]
 
     # Reserve DOI before publishing
-    r_doi = http.post(f"{base_url}/api/records/{rid}/draft/pids/doi")
+    r_doi = doi.reserve_doi_for_record(rid)
     assert r_doi.status_code in (200, 201), (
         f"Failed to reserve DOI: {r_doi.status_code} {r_doi.text}"
     )
 
-    r_pub = http.post(
-        f"{base_url}/api/records/{rid}/draft/actions/publish",
-    )
+    r_pub = resources.publish(rid)
     assert r_pub.status_code == 202, (
         f"Failed to publish resource: {r_pub.status_code} {r_pub.text}"
     )
@@ -189,14 +183,12 @@ def package_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
     Fresh metadata-only Package draft, deleted after each test.
     """
-    r = http.post(
-        f"{base_url}/api/packages",
-        json=make_package_payload(),
-    )
+    packages = PackagesClient(http, base_url)
+    r = packages.create_draft(make_package_payload())
     assert r.status_code == 201, f"Failed to create package draft: {r.text}"
     data = r.json()
     yield data
-    http.delete(f"{base_url}/api/packages/{data['id']}/draft")
+    packages.delete_draft(data["id"])
 
 
 @pytest.fixture()
@@ -207,14 +199,12 @@ def package_draft_with_files(
     Package draft with file uploads enabled.
     Use this fixture in upload tests.
     """
-    r = http.post(
-        f"{base_url}/api/packages",
-        json=make_package_payload_with_files(),
-    )
+    packages = PackagesClient(http, base_url)
+    r = packages.create_draft(make_package_payload_with_files())
     assert r.status_code == 201, f"Failed to create package draft (files): {r.text}"
     data = r.json()
     yield data
-    http.delete(f"{base_url}/api/packages/{data['id']}/draft")
+    packages.delete_draft(data["id"])
 
 
 @pytest.fixture(scope="session")
@@ -223,20 +213,20 @@ def published_package(http: Session, base_url: str) -> Generator[dict, None, Non
     Create, reserve DOI, and publish ONE Package for the entire test run.
     DOI is required on this instance (marked * in the UI).
     """
-    r = http.post(
-        f"{base_url}/api/packages",
-        json=make_package_payload(),
-    )
+    packages = PackagesClient(http, base_url)
+    doi = DOIClient(http, base_url)
+
+    r = packages.create_draft(make_package_payload())
     assert r.status_code == 201, f"Failed to create package draft: {r.text}"
     pid = r.json()["id"]
 
     # Reserve DOI before publishing
-    r_doi = http.post(f"{base_url}/api/packages/{pid}/draft/pids/doi")
+    r_doi = doi.reserve_doi_for_package(pid)
     assert r_doi.status_code in (200, 201), (
         f"Failed to reserve DOI: {r_doi.status_code} {r_doi.text}"
     )
 
-    r_pub = http.post(f"{base_url}/api/packages/{pid}/draft/actions/publish")
+    r_pub = packages.publish(pid)
     assert r_pub.status_code == 202, (
         f"Failed to publish package: {r_pub.status_code} {r_pub.text}"
     )
@@ -253,31 +243,19 @@ def community(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
     Create a Community before the test, delete it after.
     """
-    r = http.post(
-        f"{base_url}/api/communities",
-        json=make_community_payload(),
-    )
+    communities = CommunitiesClient(http, base_url)
+    r = communities.create(make_community_payload())
     assert r.status_code == 201, f"Failed to create community: {r.text}"
     data = r.json()
     yield data
-    http.delete(f"{base_url}/api/communities/{data['id']}")
+    communities.delete(data["id"])
 
 
 # ---------------------------------------------------------------------------
 # Shared helper (importable by test files)
 # ---------------------------------------------------------------------------
 
-
-def assert_ok(r: Response, *expected: int) -> None:
-    """
-    Assert the response status code is one of the expected codes.
-    Prints the response body on failure to aid debugging.
-
-    Usage:
-        assert_ok(r, 200)
-        assert_ok(r, 200, 201, 204)
-    """
-    codes = expected or (200,)
-    assert r.status_code in codes, (
-        f"Expected {codes}, got {r.status_code}\n{r.text[:600]}"
-    )
+# Re-exported so test files can `from tests.fixtures import assert_ok` without
+# needing to know it actually lives on BaseClient — single source of truth,
+# no duplicated status-code-check logic.
+assert_ok = BaseClient.assert_ok

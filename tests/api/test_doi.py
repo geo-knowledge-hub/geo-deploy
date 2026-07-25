@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -15,11 +14,10 @@ import pytest
 from requests import Session
 
 from geodeploy.doi import DOIClient
-from geodeploy.resources import ResourcesClient
 from geodeploy.packages import PackagesClient
-from tests.factories import make_resource_payload, make_package_payload
+from geodeploy.resources import ResourcesClient
+from tests.factories import make_package_payload, make_resource_payload
 from tests.fixtures import assert_ok
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

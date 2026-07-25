@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,9 +7,6 @@
 #
 
 """Module BaseClient"""
-
-
-
 
 from __future__ import annotations
 
@@ -29,9 +25,42 @@ class BaseClient:
         base_url: Root URL of the GEO Knowledge Hub instance.
     """
 
+    base_path: str = ""
+    """API prefix for this resource, e.g. "/api/packages". Set once per
+    subclass; individual methods should never hand-type it again."""
+
     def __init__(self, http: Session, base_url: str) -> None:
         self._http = http
         self._base_url = base_url
+
+    # ------------------------------------------------------------------
+    # Path building
+    # ------------------------------------------------------------------
+
+    def _path(self, *parts: object) -> str:
+        """
+        Join arbitrary segments into a clean "/"-prefixed path.
+
+        Empty/None segments are dropped and stray slashes are stripped,
+        so callers never need to worry about "//" or missing leading "/".
+
+            self._path("api", "records", record_id, "draft")
+            -> "/api/records/abc123/draft"
+        """
+        segments = [str(p).strip("/") for p in parts if p not in (None, "")]
+        return "/" + "/".join(segments)
+
+    def _resource_path(self, *parts: object) -> str:
+        """
+        Join this client's `base_path` with additional segments.
+
+            # inside a class with base_path = "/api/packages"
+            self._resource_path(package_id, "draft")
+            -> "/api/packages/abc123/draft"
+            self._resource_path()
+            -> "/api/packages"
+        """
+        return self._path(self.base_path, *parts)
 
     # ------------------------------------------------------------------
     # Internal HTTP wrappers

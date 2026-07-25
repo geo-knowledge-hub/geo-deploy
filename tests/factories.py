@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -9,12 +8,9 @@
 
 """Module factories"""
 
-
-
 from __future__ import annotations
 
 import uuid
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -54,7 +50,7 @@ def make_resource_payload(
         },
         "files": {"enabled": with_files},
         "metadata": {
-            "title": "Earth Gravitational Force" or f"pytest-resource-{_uid()}",
+            "title": title or f"pytest-resource-{_uid()}",
             "description": "Automated test resource – safe to delete.",
             "publication_date": "2024-01-15",
             "publisher": "GEO Knowledge Hub",
@@ -89,7 +85,7 @@ def make_resource_full_metadata(title: str | None = None) -> dict:
         },
         "files": {"enabled": True},
         "metadata": {
-            "title": "Test Title 2" or f"pytest-resource-full-{_uid()}",
+            "title": title or f"pytest-resource-full-{_uid()}",
             "description": "Full metadata test resource.",
             "publication_date": "2024-01-15",
             "resource_type": {"id": "software"},
@@ -137,7 +133,7 @@ def make_package_payload(
         },
         "files": {"enabled": with_files},
         "metadata": {
-            "title": "Safety Management" or f"pytest-package-{_uid()}",
+            "title": title or f"pytest-package-{_uid()}",
             "description": "Automated test package – safe to delete.",
             "publication_date": "2024-01-15",
             "publisher": "GEO Knowledge Hub",
@@ -180,7 +176,7 @@ def make_community_payload(title: str | None = None) -> dict:
             "record_policy": "open",
         },
         "metadata": {
-            "title": "Group A" or f"pytest-community-{uid}",
+            "title": title or f"pytest-community-{uid}",
             "description": "Automated test community – safe to delete.",
             "type": {"id": "topic"},
         },

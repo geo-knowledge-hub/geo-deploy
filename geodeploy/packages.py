@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,8 +7,6 @@
 #
 
 """Module PackagesClient"""
-
-
 
 from __future__ import annotations
 
@@ -21,6 +18,8 @@ from geodeploy.base import BaseClient
 class PackagesClient(BaseClient):
     """Page Object for the Knowledge Packages API."""
 
+    base_path = "/api/packages"
+
     # ------------------------------------------------------------------
     # Search & discovery
     # ------------------------------------------------------------------
@@ -30,20 +29,20 @@ class PackagesClient(BaseClient):
         params = {"size": size}
         if query:
             params["q"] = query
-        return self._get("/api/packages", params=params)
+        return self._get(self._resource_path(), params=params)
 
     def get_published(self, package_id: str) -> Response:
         """GET /api/packages/{id} — get a single published package."""
-        return self._get(f"/api/packages/{package_id}")
+        return self._get(self._resource_path(package_id))
 
     def list_user_packages(self, size: int = 5) -> Response:
         """GET /api/user/packages — current user's packages."""
-        return self._get("/api/user/packages", params={"size": size})
+        return self._get(self._path("api", "user", "packages"), params={"size": size})
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/packages with full pagination support."""
         return self._get(
-            "/api/packages", params={"q": query, "page": page, "size": size}
+            self._resource_path(), params={"q": query, "page": page, "size": size}
         )
 
     # ------------------------------------------------------------------
@@ -52,23 +51,23 @@ class PackagesClient(BaseClient):
 
     def create_draft(self, payload: dict) -> Response:
         """POST /api/packages — create a new package draft."""
-        return self._post("/api/packages", json=payload)
+        return self._post(self._resource_path(), json=payload)
 
     def get_draft(self, package_id: str) -> Response:
         """GET /api/packages/{id}/draft — retrieve a draft."""
-        return self._get(f"/api/packages/{package_id}/draft")
+        return self._get(self._resource_path(package_id, "draft"))
 
     def update_draft(self, package_id: str, payload: dict) -> Response:
         """PUT /api/packages/{id}/draft — update draft metadata."""
-        return self._put(f"/api/packages/{package_id}/draft", json=payload)
+        return self._put(self._resource_path(package_id, "draft"), json=payload)
 
     def delete_draft(self, package_id: str) -> Response:
         """DELETE /api/packages/{id}/draft — discard a draft."""
-        return self._delete(f"/api/packages/{package_id}/draft")
+        return self._delete(self._resource_path(package_id, "draft"))
 
     def open_edit_draft(self, package_id: str) -> Response:
         """POST /api/packages/{id}/draft — open an edit draft from a published package."""
-        return self._post(f"/api/packages/{package_id}/draft")
+        return self._post(self._resource_path(package_id, "draft"))
 
     def fetch_and_update_title(self, package_id: str, new_title: str) -> Response:
         """
@@ -87,9 +86,17 @@ class PackagesClient(BaseClient):
 
     def init_file(self, package_id: str, filename: str) -> Response:
         """POST /api/packages/{id}/draft/files — declare a file upload."""
+        return self.init_files(package_id, [filename])
+
+    def init_files(self, package_id: str, filenames: list[str]) -> Response:
+        """
+        POST /api/packages/{id}/draft/files — declare one or more file
+        uploads in a single call. The endpoint accepts a list, so multiple
+        files can be initialised together instead of one request per file.
+        """
         return self._post(
-            f"/api/packages/{package_id}/draft/files",
-            json=[{"key": filename}],
+            self._resource_path(package_id, "draft", "files"),
+            json=[{"key": f} for f in filenames],
         )
 
     def upload_file_content(
@@ -97,13 +104,15 @@ class PackagesClient(BaseClient):
     ) -> Response:
         """PUT /api/packages/{id}/draft/files/{filename}/content — upload bytes."""
         return self._put_binary(
-            f"/api/packages/{package_id}/draft/files/{filename}/content",
+            self._resource_path(package_id, "draft", "files", filename, "content"),
             content,
         )
 
     def commit_file(self, package_id: str, filename: str) -> Response:
         """POST /api/packages/{id}/draft/files/{filename}/commit."""
-        return self._post(f"/api/packages/{package_id}/draft/files/{filename}/commit")
+        return self._post(
+            self._resource_path(package_id, "draft", "files", filename, "commit")
+        )
 
     def upload_file(self, package_id: str, filename: str, content: bytes) -> None:
         """Full 3-step upload: init → content → commit."""
@@ -113,11 +122,11 @@ class PackagesClient(BaseClient):
 
     def list_files(self, package_id: str) -> Response:
         """GET /api/packages/{id}/draft/files."""
-        return self._get(f"/api/packages/{package_id}/draft/files")
+        return self._get(self._resource_path(package_id, "draft", "files"))
 
     def delete_file(self, package_id: str, filename: str) -> Response:
         """DELETE /api/packages/{id}/draft/files/{filename}."""
-        return self._delete(f"/api/packages/{package_id}/draft/files/{filename}")
+        return self._delete(self._resource_path(package_id, "draft", "files", filename))
 
     # ------------------------------------------------------------------
     # Publish & versions
@@ -125,19 +134,21 @@ class PackagesClient(BaseClient):
 
     def publish(self, package_id: str) -> Response:
         """POST /api/packages/{id}/draft/actions/publish."""
-        return self._post(f"/api/packages/{package_id}/draft/actions/publish")
+        return self._post(
+            self._resource_path(package_id, "draft", "actions", "publish")
+        )
 
     def list_versions(self, package_id: str) -> Response:
         """GET /api/packages/{id}/versions."""
-        return self._get(f"/api/packages/{package_id}/versions")
+        return self._get(self._resource_path(package_id, "versions"))
 
     def get_latest_version(self, package_id: str) -> Response:
         """GET /api/packages/{id}/versions/latest."""
-        return self._get(f"/api/packages/{package_id}/versions/latest")
+        return self._get(self._resource_path(package_id, "versions", "latest"))
 
     def create_new_version(self, package_id: str) -> Response:
         """POST /api/packages/{id}/versions — open a new version draft."""
-        return self._post(f"/api/packages/{package_id}/versions")
+        return self._post(self._resource_path(package_id, "versions"))
 
     # ------------------------------------------------------------------
     # Resource association
@@ -146,14 +157,14 @@ class PackagesClient(BaseClient):
     def associate_resource(self, package_id: str, resource_id: str) -> Response:
         """POST /api/packages/{id}/context/actions/associate."""
         return self._post(
-            f"/api/packages/{package_id}/context/actions/associate",
+            self._resource_path(package_id, "context", "actions", "associate"),
             json={"records": [{"id": resource_id}]},
         )
 
     def dissociate_resource(self, package_id: str, resource_id: str) -> Response:
         """POST /api/packages/{id}/context/actions/dissociate."""
         return self._post(
-            f"/api/packages/{package_id}/context/actions/dissociate",
+            self._resource_path(package_id, "context", "actions", "dissociate"),
             json={"records": [{"id": resource_id}]},
         )
 
@@ -162,20 +173,21 @@ class PackagesClient(BaseClient):
         POST /api/packages/{id}/draft/resources.
         Tries multiple body shapes across GKH versions.
         """
+        path = self._resource_path(package_id, "draft", "resources")
         for body in [
             {"records": [{"id": resource_id}]},
             {"ids": [resource_id]},
             {"record_ids": [resource_id]},
             [{"id": resource_id}],
         ]:
-            r = self._post(f"/api/packages/{package_id}/draft/resources", json=body)
+            r = self._post(path, json=body)
             if r.status_code in (200, 201, 204):
                 return r
         return r  # return last response for caller to inspect
 
     def list_draft_resources(self, package_id: str) -> Response:
         """GET /api/packages/{id}/draft/resources."""
-        return self._get(f"/api/packages/{package_id}/draft/resources")
+        return self._get(self._resource_path(package_id, "draft", "resources"))
 
     def remove_resource_from_draft(self, package_id: str, resource_id: str) -> Response:
         """
@@ -185,7 +197,7 @@ class PackagesClient(BaseClient):
         use dissociate_resource() to fully remove it from the package.
         """
         return self._delete(
-            f"/api/packages/{package_id}/draft/resources",
+            self._resource_path(package_id, "draft", "resources"),
             json={"records": [{"id": resource_id}]},
         )
 
@@ -203,4 +215,6 @@ class PackagesClient(BaseClient):
           4. edit / add more resources
           5. publish (v2)
         """
-        return self._post(f"/api/packages/{package_id}/draft/actions/resources-import")
+        return self._post(
+            self._resource_path(package_id, "draft", "actions", "resources-import")
+        )

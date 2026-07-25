@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -8,9 +7,6 @@
 #
 
 """Module SearchClient"""
-
-
-
 
 from __future__ import annotations
 
@@ -25,6 +21,8 @@ _SPATIAL_PARAM = "bounds"
 
 class SearchClient(BaseClient):
     """Page Object for the unified /api/search endpoint."""
+
+    base_path = "/api/search"
 
     # ------------------------------------------------------------------
     # Core search
@@ -45,7 +43,7 @@ class SearchClient(BaseClient):
             size:  Number of results per page.
         """
         return self._get(
-            "/api/search",
+            self._resource_path(),
             params={"q": query, "page": page, "size": size},
         )
 
@@ -89,7 +87,7 @@ class SearchClient(BaseClient):
         }
         if query:
             params["q"] = query
-        return self._get("/api/search", params=params)
+        return self._get(self._resource_path(), params=params)
 
     def search_by_point(
         self,
@@ -148,7 +146,7 @@ class SearchClient(BaseClient):
         if query:
             q += f" AND {query}"
         return self._get(
-            "/api/search",
+            self._resource_path(),
             params={"q": q, "page": page, "size": size},
         )
 
@@ -208,4 +206,4 @@ class SearchClient(BaseClient):
         if all(v is not None for v in (west, south, east, north)):
             params[_SPATIAL_PARAM] = f"{west},{south},{east},{north}"
 
-        return self._get("/api/search", params=params)
+        return self._get(self._resource_path(), params=params)

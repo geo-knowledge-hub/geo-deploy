@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # This file is part of GEO Knowledge Hub.
 # Copyright 2020-2021 GEO Secretariat.
@@ -9,14 +8,12 @@
 
 """Module packages test"""
 
-
-
-
 from __future__ import annotations
 
 import pytest
 from requests import Session
 
+from geodeploy.doi import DOIClient
 from geodeploy.packages import PackagesClient
 from geodeploy.resources import ResourcesClient
 from tests.factories import make_package_payload, make_resource_payload
@@ -140,7 +137,7 @@ class TestPackagePublish:
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
         pid = r.json()["id"]
-        http.post(f"{base_url}/api/packages/{pid}/draft/pids/doi")
+        DOIClient(http, base_url).reserve_doi_for_package(pid)
         r_pub = packages.publish(pid)
         assert_ok(r_pub, 202)
 
@@ -233,18 +230,7 @@ class TestPackageFileUpload:
     ) -> None:
         """The init endpoint accepts a list — declare 3 files in one call."""
         pid = package_draft_with_files["id"]
-        r = (
-            packages.init_file.__func__(packages, pid, "bulk-a.txt")
-            if False
-            else packages._post(
-                f"/api/packages/{pid}/draft/files",
-                json=[
-                    {"key": "bulk-a.txt"},
-                    {"key": "bulk-b.txt"},
-                    {"key": "bulk-c.txt"},
-                ],
-            )
-        )
+        r = packages.init_files(pid, ["bulk-a.txt", "bulk-b.txt", "bulk-c.txt"])
         assert_ok(r, 201)
 
 
