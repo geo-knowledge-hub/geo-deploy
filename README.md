@@ -129,8 +129,8 @@ classes, and all data comes from the factories.
 
 ### `docs/`
 Short contributor notes, not required just to run the suite:
-- `metadata.md` — how to add a new required metadata field
-- `tests.md` — how to add a new test or a new client method
+- [`docs/metadata.md`](docs/metadata.md) — how to add a new required metadata field
+- [`docs/tests.md`](docs/tests.md) — how to add a new test or a new client method
 
 ### Where's `pytest.ini`?
 There isn't one. Pytest finds `tests/` because it's passed explicitly on the

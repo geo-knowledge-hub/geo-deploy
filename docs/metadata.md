@@ -20,7 +20,6 @@ One change in `factories.py` applies to every test that creates a resource.
 ## Why Published Records Accumulate on the Server
 
 > [!NOTE]
-> **Why do published records stick around?**
 >
 > InvenioRDM does not allow hard-deleting published records via the public
 > API. Only draft records can be deleted. This means every time a test
