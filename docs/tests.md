@@ -23,15 +23,18 @@ def test_my_new_test(
 
 ## Adding a New API Endpoint
 
-1. Open the relevant file in `client/`
-2. Add a method using `self._get`, `self._post`, `self._put`, or `self._delete`
+1. Open the relevant file in `geodeploy/`
+2. Add a method using `self._get`, `self._post`, `self._put`, or `self._delete`,
+   building the path with `self._resource_path(...)` — never hand-type the
+   `base_path` again
 3. Call it from your test
 
 ```python
-# In client/packages.py
+# In geodeploy/packages.py (base_path = "/api/packages" is already set once
+# at the top of the class)
 def my_new_endpoint(self, package_id: str) -> Response:
     """GET /api/packages/{id}/something-new"""
-    return self._get(f"/api/packages/{package_id}/something-new")
+    return self._get(self._resource_path(package_id, "something-new"))
 ```
 
 No URLs ever appear in test files.

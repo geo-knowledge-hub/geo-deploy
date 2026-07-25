@@ -37,21 +37,28 @@ geo-deploy/
 ├── .env                   # Your private settings (never commit this)
 ├── .env.example           # Template showing what goes in .env
 ├── .gitignore             # Prevents .env from being committed to Git
-├── pytest.ini             # Tells pytest where tests are and sets Python path
+├── .python-version        # Python version uv provisions (3.12)
+├── pyproject.toml         # Project metadata & dependencies
+├── uv.lock                # Exact pinned dependency versions — run `uv sync`
+│                          # (.venv/ is created here by uv; not committed)
 │
-├── conftest.py            # Entry point: loads .env, registers CLI options, SSL bypass
-├── fixtures.py            # All @pytest.fixture definitions (setup/teardown)
-├── factories.py           # All payload builders (data sent to the API)
-│
-├── client/                # Page Object Model — one class per API domain
-│   ├── base.py            # Shared HTTP session and helper methods
+├── geodeploy/             # Page Object Model — one class per API domain
+│   ├── base.py            # Shared HTTP session, base_path/_path helpers
 │   ├── resources.py       # All /api/records endpoints
 │   ├── packages.py        # All /api/packages endpoints
 │   ├── communities.py     # All /api/communities endpoints
 │   ├── doi.py             # All DOI reservation endpoints
 │   └── search.py          # /api/search with spatial support
 │
+├── docs/                  # Contributor notes (not needed to just run tests)
+│   ├── metadata.md        # How to add a required metadata field
+│   └── tests.md           # How to add a new test / endpoint
+│
 └── tests/
+    ├── conftest.py        # Entry point: loads .env, registers CLI options, SSL bypass
+    ├── fixtures.py        # All @pytest.fixture definitions (setup/teardown)
+    ├── factories.py       # All payload builders (data sent to the API)
+    │
     ├── ui/                # Tests that do not require authentication
     │   ├── test_homepage.py
     │   └── test_login.py
@@ -68,7 +75,7 @@ geo-deploy/
 
 ## What Each File Does
 
-### `conftest.py`
+### `tests/conftest.py`
 The entry point that pytest reads first before running any test.
 It does three things:
 1. Loads your `.env` file so your token and URL are available everywhere
@@ -77,7 +84,7 @@ It does three things:
 
 **You should never need to edit this file.**
 
-### `fixtures.py`
+### `tests/fixtures.py`
 Contains all pytest fixtures — functions that set up resources before a test
 and clean them up after. Examples:
 - `http` — creates an authenticated HTTP session shared across all tests
@@ -87,7 +94,7 @@ and clean them up after. Examples:
 
 **Edit this file when:** you need a new shared resource (e.g. a new record type fixture).
 
-### `factories.py`
+### `tests/factories.py`
 Contains pure data builder functions that return the JSON payloads sent to the API.
 Examples:
 - `make_resource_payload()` — builds a minimal valid Knowledge Resource body
@@ -98,12 +105,13 @@ These functions have no side effects — they just build and return a dictionary
 
 **Edit this file when:** the API schema changes (e.g. a new required field is added).
 
-### `client/`
+### `geodeploy/`
 One class per API domain. Tests call methods on these classes instead of
 building URLs directly. This means if an endpoint URL ever changes, you
 update it in one place only.
 
-- `base.py` — shared `_get`, `_post`, `_put`, `_delete` methods used by all clients
+- `base.py` — shared `_get`/`_post`/`_put`/`_delete` methods, plus `base_path` /
+  `_resource_path()` helpers so URL segments never need to be hand-typed
 - `resources.py` — `ResourcesClient`: all Knowledge Resource API calls
 - `packages.py` — `PackagesClient`: all Knowledge Package API calls
 - `communities.py` — `CommunitiesClient`: all Community API calls
@@ -119,27 +127,48 @@ classes, and all data comes from the factories.
 
 **Edit these files when:** you want to add, remove, or change a test.
 
-### `pytest.ini`
-Tells pytest two things:
-1. Where to find the tests (`testpaths = tests`)
-2. That the project root should be on Python's import path (`pythonpath = .`)
-   so that `conftest.py` can import from `fixtures.py` and `factories.py`
+### `docs/`
+Short contributor notes, not required just to run the suite:
+- `metadata.md` — how to add a new required metadata field
+- `tests.md` — how to add a new test or a new client method
 
-**You should never need to edit this file.**
+### Where's `pytest.ini`?
+There isn't one. Pytest finds `tests/` because it's passed explicitly on the
+command line (`pytest tests/ -v`), and imports like `from geodeploy.packages
+import PackagesClient` resolve because every test package (`tests/`,
+`tests/api/`, `tests/ui/`) has an `__init__.py`, which makes pytest add the
+project root to `sys.path` automatically. No config file needed.
 
 ---
 
 ## First-Time Setup
 
+This project is managed with **[uv](https://docs.astral.sh/uv/)**, not plain
+`pip`. Dependencies are pinned in `uv.lock`, and the required Python version
+(3.12) is pinned in `.python-version` — uv reads both automatically.
+
 ### Step 1 — Install uv (if not already installed)
 ```powershell
 pip install uv
 ```
+Or use the standalone installer (no existing Python/pip required):
+```powershell
+irm https://astral.sh/uv/install.ps1 | iex
+```
 
 ### Step 2 — Install dependencies
+This project already ships a `pyproject.toml` and `uv.lock`, so there's
+nothing to add — just sync the environment they describe:
 ```powershell
-uv add pytest requests python-dotenv pytest-html
+uv sync
 ```
+This creates a `.venv/` folder in `geo-deploy/` with exactly the pinned
+versions from `uv.lock` (pytest, requests, python-dotenv, urllib3, plus
+ruff for linting). You don't need to activate it — prefix commands with
+`uv run` instead (see **Running Tests** below).
+
+Only use `uv add <package>` later if you need to introduce a *new*
+dependency — it updates both `pyproject.toml` and `uv.lock` for you.
 
 ### Step 3 — Get your API token
 1. Open your GKH instance in a browser
@@ -179,41 +208,41 @@ Always run from inside the `geo-deploy/` folder:
 cd geo-deploy
 ```
 
+Every command below is prefixed with `uv run` — that runs it inside the
+project's `.venv/` without you needing to activate it manually. (If you'd
+rather activate the venv yourself, `.venv\Scripts\activate` then drop the
+`uv run` prefix from any command.)
+
 ### Run everything
 ```powershell
-pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 ### Run only API tests (requires token)
 ```powershell
-pytest tests/api/ -v
+uv run pytest tests/api/ -v
 ```
 
 ### Run only UI tests (no token needed for most)
 ```powershell
-pytest tests/ui/ -v
+uv run pytest tests/ui/ -v
 ```
 
 ### Run a specific file
 ```powershell
-pytest tests/api/test_packages.py -v
-pytest tests/api/test_doi.py -v
-pytest tests/api/test_search.py -v
+uv run pytest tests/api/test_packages.py -v
+uv run pytest tests/api/test_doi.py -v
+uv run pytest tests/api/test_search.py -v
 ```
 
 ### Run a specific single test
 ```powershell
-pytest tests/api/test_packages.py::TestPackageDraft::test_create_draft -v
-```
-
-### Generate an HTML report
-```powershell
-pytest tests/ -v --html=report.html --self-contained-html
+uv run pytest tests/api/test_packages.py::TestPackageDraft::test_create_draft -v
 ```
 
 ### Override `.env` values for a single run
 ```powershell
-pytest tests/ -v --base-url "https://other-instance.org" --api-token "other_token"
+uv run pytest tests/ -v --base-url "https://other-instance.org" --api-token "other_token"
 ```
 
 CLI flags always take priority over `.env` values.
