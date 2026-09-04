@@ -1,17 +1,64 @@
 [project]
-name = "gkh-pom"
+name = "gkh-deploy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Produce and verify GEO Knowledge Hub deployments."
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.12"
+authors = [{ name = "GEO Secretariat", email = "secretariat@geosec.org" }]
 dependencies = [
-    "pytest>=9.1.1",
-    "python-dotenv>=1.2.2",
-    "requests>=2.34.2",
-    "urllib3>=2.7.0",
+    "gkh-cli>=0.1.0",
+    "jinja2>=3.1.6",
+    "pydash>=8.1.0",
+    "pyyaml>=6.0.3",
+    "typer>=0.27.2",
 ]
+
+[project.urls]
+Homepage = "https://gkhub.earthobservations.org"
+Repository = "https://github.com/geo-knowledge-hub/gkh-deploy"
+
+[project.scripts]
+gkh-deploy = "gkh_deploy.cli:app"
+
+[project.entry-points."gkh.commands"]
+deploy = "gkh_deploy.cli:app"
 
 [dependency-groups]
 dev = [
-    "ruff>=0.15.20",
+    "pytest>=9.1.1",
+    "python-dotenv>=1.2.2",
+    "requests>=2.34.2",
+    "ruff>=0.16.5",
+    "urllib3>=2.7.0",
 ]
+
+[tool.uv.sources]
+gkh-cli = { path = "../gkh-cli" }
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not integration'"
+markers = ["integration: renders against the real Helm chart; needs helm"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["validation"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "D", "ANN", "RUF"]
+ignore = ["D203", "D213", "D202", "ANN2", "ANN401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "ANN"]
