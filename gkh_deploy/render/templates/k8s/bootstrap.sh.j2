@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# Post-install sequence for a GEO Knowledge Hub instance.
+#
+# Run this AFTER `helm install` has settled and the worker pod is Running. It
+# seeds the GEO-specific roles, users and vocabularies that the chart does not.
+#
+# `gkh deploy bootstrap` prints these same steps, from the same definition, for
+# an operator who would rather run them by hand.
+
+set -euo pipefail
+
+NAMESPACE="{{ settings.namespace }}"
+SELECTOR="{{ selector }}"
+
+DEPLOYMENT="$(kubectl get deployment -n "$NAMESPACE" -l "$SELECTOR" -o jsonpath='{.items[*].metadata.name}')"
+
+if [ -z "$DEPLOYMENT" ] || [ "$(echo "$DEPLOYMENT" | wc -w)" -ne 1 ]; then
+  echo "expected exactly one worker deployment matching $SELECTOR, found: '$DEPLOYMENT'" >&2
+  exit 1
+fi
+
+run() {
+  echo "--- $1"
+  shift
+  kubectl exec -n "$NAMESPACE" "deploy/$DEPLOYMENT" -c {{ container }} -- bash -lc "$*"
+}
+{% for step in steps %}
+# {{ step.description }}
+run {{ step.name | shell }} {{ step.shell | shell }}
+{% endfor %}
+echo
+echo "Bootstrap complete."
