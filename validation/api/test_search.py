@@ -13,8 +13,8 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from geodeploy.search import SearchClient
-from tests.fixtures import assert_ok
+from validation.client.search import SearchClient
+from validation.fixtures import assert_ok
 
 
 @pytest.fixture()

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from requests import Response
 
-from geodeploy.base import BaseClient
+from validation.client.base import BaseClient
 
 
 class DOIClient(BaseClient):

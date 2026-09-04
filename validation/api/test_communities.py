@@ -13,9 +13,9 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from geodeploy.communities import CommunitiesClient
-from tests.factories import make_community_payload
-from tests.fixtures import assert_ok
+from validation.client.communities import CommunitiesClient
+from validation.factories import make_community_payload
+from validation.fixtures import assert_ok
 
 
 @pytest.fixture()

@@ -14,9 +14,9 @@ import pytest
 import requests
 from requests import Session
 
-from geodeploy.packages import PackagesClient
-from geodeploy.resources import ResourcesClient
-from tests.fixtures import assert_ok
+from validation.client.packages import PackagesClient
+from validation.client.resources import ResourcesClient
+from validation.fixtures import assert_ok
 
 
 @pytest.fixture()

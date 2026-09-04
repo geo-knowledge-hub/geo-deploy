@@ -13,10 +13,10 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from geodeploy.packages import PackagesClient
-from geodeploy.resources import ResourcesClient
-from tests.factories import make_package_payload, make_resource_payload
-from tests.fixtures import assert_ok
+from validation.client.packages import PackagesClient
+from validation.client.resources import ResourcesClient
+from validation.factories import make_package_payload, make_resource_payload
+from validation.fixtures import assert_ok
 
 
 @pytest.fixture()

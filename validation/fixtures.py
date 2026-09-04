@@ -16,12 +16,12 @@ from collections.abc import Generator
 import pytest
 from requests import Session
 
-from geodeploy.base import BaseClient
-from geodeploy.communities import CommunitiesClient
-from geodeploy.doi import DOIClient
-from geodeploy.packages import PackagesClient
-from geodeploy.resources import ResourcesClient
-from tests.factories import (
+from validation.client.base import BaseClient
+from validation.client.communities import CommunitiesClient
+from validation.client.doi import DOIClient
+from validation.client.packages import PackagesClient
+from validation.client.resources import ResourcesClient
+from validation.factories import (
     make_community_payload,
     make_package_payload,
     make_package_payload_with_files,
@@ -42,10 +42,10 @@ def base_url(request: pytest.FixtureRequest) -> str:
 
 @pytest.fixture(scope="session")
 def api_token(request: pytest.FixtureRequest) -> str:
-    """Bearer token — from --api-token flag or GEO_API_TOKEN env var."""
-    token = request.config.getoption("--api-token") or os.getenv("GEO_API_TOKEN", "")
+    """Bearer token — from --api-token flag or GKH_API_TOKEN env var."""
+    token = request.config.getoption("--api-token") or os.getenv("GKH_API_TOKEN", "")
     if not token:
-        pytest.skip("No API token provided. Use --api-token or set GEO_API_TOKEN.")
+        pytest.skip("No API token provided. Use --api-token or set GKH_API_TOKEN.")
     return token
 
 
@@ -255,7 +255,7 @@ def community(http: Session, base_url: str) -> Generator[dict, None, None]:
 # Shared helper (importable by test files)
 # ---------------------------------------------------------------------------
 
-# Re-exported so test files can `from tests.fixtures import assert_ok` without
+# Re-exported so test files can `from validation.fixtures import assert_ok` without
 # needing to know it actually lives on BaseClient — single source of truth,
 # no duplicated status-code-check logic.
 assert_ok = BaseClient.assert_ok

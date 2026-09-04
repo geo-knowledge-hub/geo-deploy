@@ -13,10 +13,10 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from geodeploy.doi import DOIClient
-from geodeploy.resources import ResourcesClient
-from tests.factories import make_resource_payload
-from tests.fixtures import assert_ok
+from validation.client.doi import DOIClient
+from validation.client.resources import ResourcesClient
+from validation.factories import make_resource_payload
+from validation.fixtures import assert_ok
 
 # ---------------------------------------------------------------------------
 # Client fixture — function-scoped so each test gets a clean client object
