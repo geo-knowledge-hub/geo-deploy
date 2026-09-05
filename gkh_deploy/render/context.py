@@ -16,11 +16,23 @@ from gkh_deploy import steps as steps_module
 from gkh_deploy.render.k8s import WORKER_CONTAINER, worker_selector
 
 #
+# Constants - Rate limit storage
+# > A Helm expression, resolved by the chart, so it follows redis.enabled and
+# > redisExternal rather than naming a service this project would have to track.
+#
+RATELIMIT_STORAGE_URL = 'redis://{{ include "invenio.redis.hostname" . }}:6379/3'
+
+#
 # Constants - Extra configuration entries
 #
 BASE_EXTRA_CONFIG = {
     "INVENIO_APP_ALLOWED_HOSTS": None,
     "INVENIO_LOGGING_CONSOLE_LEVEL": "WARNING",
+    # The chart injects RATELIMIT_STORAGE_URI, which the flask-limiter the application
+    # image ships is too old to read. Without the _URL spelling it falls back to
+    # redis://localhost:6379 and every request answers 500. The chart runs extraConfig
+    # through `tpl`, so this resolves to the same Redis it uses for the URI.
+    "INVENIO_RATELIMIT_STORAGE_URL": RATELIMIT_STORAGE_URL,
 }
 
 

@@ -35,11 +35,6 @@ pytestmark = [
     pytest.mark.skipif(not CHART or not Path(CHART).is_dir(), reason="needs GKH_CHART_PATH"),
 ]
 
-#
-# Constants - Secrets
-#
-SECRETS_FROM_SCRIPT = {"gkh-postgresql", "gkh-rabbitmq", "gkh-datacite"}
-
 
 #
 # Auxiliary functions
@@ -55,6 +50,43 @@ def helm_template(values_path):
 def documents(result):
     """Get the documents from the result."""
     return [d for d in yaml.safe_load_all(result.stdout) if d]
+
+
+def secret_key_refs(node):
+    """Every (secret, key) pair the manifests read, wherever it appears."""
+    if isinstance(node, dict):
+        reference = node.get("secretKeyRef")
+
+        if isinstance(reference, dict):
+            yield reference["name"], reference["key"]
+
+        for value in node.values():
+            yield from secret_key_refs(value)
+
+    elif isinstance(node, list):
+        for value in node:
+            yield from secret_key_refs(value)
+
+
+def secrets_in_manifests(result):
+    """The (secret, key) pairs the chart creates itself."""
+    return {
+        (d["metadata"]["name"], key)
+        for d in documents(result)
+        if d.get("kind") == "Secret"
+        for key in d.get("data") or {}
+    }
+
+
+def secrets_in_script(script):
+    """The (secret, key) pairs secrets.sh creates."""
+    blocks = re.split(r"^create_secret ", script, flags=re.M)[1:]
+
+    return {
+        (block.split()[0].strip('"'), key)
+        for block in blocks
+        for key in re.findall(r"--from-literal=([^=]+)=", block)
+    }
 
 
 def invenio_config(result):
@@ -102,12 +134,13 @@ def test_helm_reports_no_warnings(rendered):
     assert "warning" not in rendered.stderr.lower(), rendered.stderr
 
 
-def test_every_secret_reference_resolves(rendered):
-    """The DataCite footgun: a secretKeyRef whose Secret is never created."""
-    in_manifests = {d["metadata"]["name"] for d in documents(rendered) if d.get("kind") == "Secret"}
-    referenced = set(re.findall(r"secretKeyRef:\s*\n\s*name: (\S+)", rendered.stdout))
+def test_every_secret_reference_resolves(rendered, tmp_path):
+    """A secretKeyRef whose Secret, or whose key within it, is never created."""
+    provided = secrets_in_manifests(rendered) | secrets_in_script(
+        (tmp_path / "secrets.sh").read_text()
+    )
 
-    assert referenced - in_manifests - SECRETS_FROM_SCRIPT == set()
+    assert set(secret_key_refs(documents(rendered))) - provided == set()
 
 
 def test_no_credential_is_a_literal_in_a_pod_environment(rendered):
@@ -127,13 +160,13 @@ def test_the_hostname_reaches_every_place_that_needs_it(rendered):
     assert "gkhub.example.org" in config["INVENIO_TRUSTED_HOSTS"]
 
 
-def test_the_ratelimit_storage_uri_is_set_and_the_url_is_not(rendered):
-    # The chart sets the key flask-limiter reads first
-    # _URL is deprecated
+def test_both_ratelimit_storage_spellings_reach_the_same_redis(rendered):
+    # The chart sets only the URI, which flask-limiter 1.1.0 does not read. The bundle
+    # adds the _URL spelling, and the chart resolves the host expression inside it.
     config = invenio_config(rendered)
 
     assert config["INVENIO_RATELIMIT_STORAGE_URI"].startswith("redis://")
-    assert "INVENIO_RATELIMIT_STORAGE_URL" not in config
+    assert config["INVENIO_RATELIMIT_STORAGE_URL"] == config["INVENIO_RATELIMIT_STORAGE_URI"]
 
 
 def test_the_worker_is_discoverable_by_the_selector_bootstrap_uses(rendered):

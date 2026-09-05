@@ -161,14 +161,7 @@ CASES = [
         "deprecated-extra-config",
     ),
     (
-        rules.redundant_ratelimit_storage_url,
-        {
-            "invenio": {
-                "extraConfig": {
-                    "INVENIO_RATELIMIT_STORAGE_URL": "redis://x:6379/3",
-                },
-            },
-        },
+        rules.ratelimit_storage_url_missing,
         {
             "invenio": {
                 "extraConfig": {
@@ -176,7 +169,14 @@ CASES = [
                 },
             },
         },
-        "redundant-ratelimit-storage-url",
+        {
+            "invenio": {
+                "extraConfig": {
+                    "INVENIO_RATELIMIT_STORAGE_URL": "redis://x:6379/3",
+                },
+            },
+        },
+        "ratelimit-storage-url-missing",
     ),
 ]
 
@@ -190,7 +190,11 @@ def test_each_rule_catches_what_it_is_for_and_stays_quiet_otherwise(rule, trippi
 def test_a_clean_configuration_has_no_findings():
     values = {
         "image": {"tag": "v1.7.0.dev17"},
-        "invenio": {"hostname": "gkhub.example.org", "init": False},
+        "invenio": {
+            "hostname": "gkhub.example.org",
+            "init": False,
+            "extraConfig": {"INVENIO_RATELIMIT_STORAGE_URL": "redis://x:6379/3"},
+        },
     }
 
     assert rules.check(values) == []

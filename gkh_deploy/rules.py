@@ -338,23 +338,23 @@ def deprecated_extra_config(values: dict) -> list[Finding]:
     ]
 
 
-def redundant_ratelimit_storage_url(values: dict) -> list[Finding]:
-    """RATELIMIT_STORAGE_URL is dead weight on this InvenioRDM version."""
+def ratelimit_storage_url_missing(values: dict) -> list[Finding]:
+    """Without RATELIMIT_STORAGE_URL the rate limiter talks to localhost."""
     extra = pydash.get(values, "invenio.extraConfig") or {}
 
-    if "INVENIO_RATELIMIT_STORAGE_URL" not in extra:
+    if extra.get("INVENIO_RATELIMIT_STORAGE_URL"):
         return []
 
     return [
         Finding(
-            "redundant-ratelimit-storage-url",
-            Level.warning,
-            "invenio.extraConfig sets INVENIO_RATELIMIT_STORAGE_URL. It has no effect: "
-            "flask-limiter reads RATELIMIT_STORAGE_URI first and only falls back to "
-            "_URL, and the chart already injects the URI. The _URL spelling is deprecated "
-            "and was removed in flask-limiter 3.",
-            "flask-limiter 2.9.2 extension.py: "
-            "config.get(STORAGE_URI, config.get(STORAGE_URL, None))",
+            "ratelimit-storage-url-missing",
+            Level.error,
+            "invenio.extraConfig does not set INVENIO_RATELIMIT_STORAGE_URL. The chart "
+            "injects INVENIO_RATELIMIT_STORAGE_URI instead, which flask-limiter 1.1.0 "
+            "does not read, so the limiter falls back to redis://localhost:6379 and "
+            "every request answers 500. Point it at the same Redis as the URI.",
+            "flask-limiter 1.1.0 in geoknowledgehub/geo-knowledge-hub knows only "
+            "RATELIMIT_STORAGE_URL",
         )
     ]
 
@@ -412,7 +412,7 @@ ALL = (
     unknown_chart_key,
     image_tag_not_pinned,
     deprecated_extra_config,
-    redundant_ratelimit_storage_url,
+    ratelimit_storage_url_missing,
 )
 
 

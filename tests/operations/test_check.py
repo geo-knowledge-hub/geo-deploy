@@ -20,6 +20,17 @@ from gkh_deploy.cli import app
 #
 runner = CliRunner()
 
+#
+# Constants - A bundle whose only problem is the unpinned image tag
+#
+ONLY_A_WARNING = """\
+image:
+  tag: latest
+invenio:
+  extraConfig:
+    INVENIO_RATELIMIT_STORAGE_URL: redis://x:6379/3
+"""
+
 
 #
 # Auxiliary functions
@@ -56,14 +67,14 @@ def test_check_reports_a_missing_settings_file_or_a_bundle_without_values(tmp_pa
 
 
 def test_strict_turns_warnings_into_a_failure(tmp_path):
-    directory = bundle_with(tmp_path, "image:\n  tag: latest\n")
+    directory = bundle_with(tmp_path, ONLY_A_WARNING)
 
     assert runner.invoke(app, ["check", "-d", str(directory)]).exit_code == 0
     assert runner.invoke(app, ["check", "-d", str(directory), "--strict"]).exit_code == 1
 
 
 def test_check_emits_json_when_asked(tmp_path):
-    directory = bundle_with(tmp_path, "image:\n  tag: latest\n")
+    directory = bundle_with(tmp_path, ONLY_A_WARNING)
 
     result = runner.invoke(app, ["check", "-d", str(directory)], obj=Context(output=Output.json))
     payload = json.loads(result.stdout)
