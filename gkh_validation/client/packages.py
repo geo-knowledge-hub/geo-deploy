@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from requests import Response
 
-from validation.client.base import BaseClient
+from gkh_validation.client.base import BaseClient
 
 
 class PackagesClient(BaseClient):
@@ -41,9 +41,7 @@ class PackagesClient(BaseClient):
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/packages with full pagination support."""
-        return self._get(
-            self._resource_path(), params={"q": query, "page": page, "size": size}
-        )
+        return self._get(self._resource_path(), params={"q": query, "page": page, "size": size})
 
     # ------------------------------------------------------------------
     # Draft management
@@ -99,9 +97,7 @@ class PackagesClient(BaseClient):
             json=[{"key": f} for f in filenames],
         )
 
-    def upload_file_content(
-        self, package_id: str, filename: str, content: bytes
-    ) -> Response:
+    def upload_file_content(self, package_id: str, filename: str, content: bytes) -> Response:
         """PUT /api/packages/{id}/draft/files/{filename}/content — upload bytes."""
         return self._put_binary(
             self._resource_path(package_id, "draft", "files", filename, "content"),
@@ -110,9 +106,7 @@ class PackagesClient(BaseClient):
 
     def commit_file(self, package_id: str, filename: str) -> Response:
         """POST /api/packages/{id}/draft/files/{filename}/commit."""
-        return self._post(
-            self._resource_path(package_id, "draft", "files", filename, "commit")
-        )
+        return self._post(self._resource_path(package_id, "draft", "files", filename, "commit"))
 
     def upload_file(self, package_id: str, filename: str, content: bytes) -> None:
         """Full 3-step upload: init → content → commit."""
@@ -134,9 +128,7 @@ class PackagesClient(BaseClient):
 
     def publish(self, package_id: str) -> Response:
         """POST /api/packages/{id}/draft/actions/publish."""
-        return self._post(
-            self._resource_path(package_id, "draft", "actions", "publish")
-        )
+        return self._post(self._resource_path(package_id, "draft", "actions", "publish"))
 
     def list_versions(self, package_id: str) -> Response:
         """GET /api/packages/{id}/versions."""
@@ -215,6 +207,4 @@ class PackagesClient(BaseClient):
           4. edit / add more resources
           5. publish (v2)
         """
-        return self._post(
-            self._resource_path(package_id, "draft", "actions", "resources-import")
-        )
+        return self._post(self._resource_path(package_id, "draft", "actions", "resources-import"))

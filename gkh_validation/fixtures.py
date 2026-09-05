@@ -10,50 +10,65 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import Generator
 
 import pytest
 from requests import Session
 
-from validation.client.base import BaseClient
-from validation.client.communities import CommunitiesClient
-from validation.client.doi import DOIClient, doi_configured
-from validation.client.packages import PackagesClient
-from validation.client.resources import ResourcesClient
-from validation.factories import (
+from gkh_validation.client.base import BaseClient
+from gkh_validation.client.communities import CommunitiesClient
+from gkh_validation.client.doi import DOIClient, doi_configured
+from gkh_validation.client.packages import PackagesClient
+from gkh_validation.client.resources import ResourcesClient
+from gkh_validation.factories import (
     make_community_payload,
     make_package_payload,
     make_package_payload_with_files,
     make_resource_payload,
     make_resource_payload_with_files,
 )
-
-# ---------------------------------------------------------------------------
-# Core session fixtures
-# ---------------------------------------------------------------------------
+from gkh_validation.settings import load_config_bool_from_env, load_config_value
 
 
 @pytest.fixture(scope="session")
-def base_url(request: pytest.FixtureRequest) -> str:
-    """Base URL of the GEO Knowledge Hub instance (no trailing slash)."""
-    return request.config.getoption("--base-url").rstrip("/")
+def base_url(request: pytest.FixtureRequest, dotenv) -> str:
+    """Base URL of the GEO Knowledge Hub instance."""
+    url = load_config_value(
+        name="GKH_BASE_URL",
+        flag=request.config.getoption("--base-url"),
+    )
+
+    if not url:
+        pytest.skip("No instance provided. Use --base-url or set GKH_BASE_URL.")
+
+    return url.rstrip("/")
 
 
 @pytest.fixture(scope="session")
-def api_token(request: pytest.FixtureRequest) -> str:
-    """Bearer token — from --api-token flag or GKH_API_TOKEN env var."""
-    token = request.config.getoption("--api-token") or os.getenv("GKH_API_TOKEN", "")
+def api_token(request: pytest.FixtureRequest, dotenv) -> str:
+    """Bearer token."""
+    token = load_config_value(
+        name="GKH_API_TOKEN",
+        flag=request.config.getoption("--api-token"),
+    )
+
     if not token:
         pytest.skip("No API token provided. Use --api-token or set GKH_API_TOKEN.")
+
     return token
 
 
 @pytest.fixture(scope="session")
-def verify_tls(request: pytest.FixtureRequest) -> bool:
+def verify_tls(request: pytest.FixtureRequest, dotenv) -> bool:
     """False when --no-verify-tls is passed (self-signed / IP-based certs)."""
-    return not request.config.getoption("--no-verify-tls")
+    if request.config.getoption("--no-verify-tls"):
+        return False
 
+    return not load_config_bool_from_env("GKH_NO_VERIFY_TLS")
+
+
+@pytest.fixture(scope="session")
+def http(base_url: str, api_token: str, verify_tls: bool) -> Session:
     """
     Authenticated requests.Session.
     Shared across the entire test run for performance.
@@ -67,10 +82,6 @@ def verify_tls(request: pytest.FixtureRequest) -> bool:
     Without Referer/Origin, the server returns:
       400 {"message": "Referer checking failed - no Referer."}
     """
-
-
-@pytest.fixture(scope="session")
-def http(base_url: str, api_token: str, verify_tls: bool) -> Session:
     s = Session()
     s.verify = verify_tls
 
@@ -132,9 +143,7 @@ def resource_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
 
 
 @pytest.fixture()
-def resource_draft_with_files(
-    http: Session, base_url: str
-) -> Generator[dict, None, None]:
+def resource_draft_with_files(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
     Resource draft with file uploads enabled.
     Use this fixture in upload tests.
@@ -174,9 +183,7 @@ def published_resource(http: Session, base_url: str) -> Generator[dict, None, No
     )
 
     r_pub = resources.publish(rid)
-    assert r_pub.status_code == 202, (
-        f"Failed to publish resource: {r_pub.status_code} {r_pub.text}"
-    )
+    assert r_pub.status_code == 202, f"Failed to publish resource: {r_pub.status_code} {r_pub.text}"
     yield r_pub.json()
 
 
@@ -199,9 +206,7 @@ def package_draft(http: Session, base_url: str) -> Generator[dict, None, None]:
 
 
 @pytest.fixture()
-def package_draft_with_files(
-    http: Session, base_url: str
-) -> Generator[dict, None, None]:
+def package_draft_with_files(http: Session, base_url: str) -> Generator[dict, None, None]:
     """
     Package draft with file uploads enabled.
     Use this fixture in upload tests.
@@ -241,9 +246,7 @@ def published_package(http: Session, base_url: str) -> Generator[dict, None, Non
     )
 
     r_pub = packages.publish(pid)
-    assert r_pub.status_code == 202, (
-        f"Failed to publish package: {r_pub.status_code} {r_pub.text}"
-    )
+    assert r_pub.status_code == 202, f"Failed to publish package: {r_pub.status_code} {r_pub.text}"
     yield r_pub.json()
 
 
@@ -269,7 +272,7 @@ def community(http: Session, base_url: str) -> Generator[dict, None, None]:
 # Shared helper (importable by test files)
 # ---------------------------------------------------------------------------
 
-# Re-exported so test files can `from validation.fixtures import assert_ok` without
+# Re-exported so test files can `from gkh_validation.fixtures import assert_ok` without
 # needing to know it actually lives on BaseClient — single source of truth,
 # no duplicated status-code-check logic.
 assert_ok = BaseClient.assert_ok

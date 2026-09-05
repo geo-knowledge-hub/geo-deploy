@@ -13,11 +13,11 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.doi import DOIClient, doi_configured
-from validation.client.packages import PackagesClient
-from validation.client.resources import ResourcesClient
-from validation.factories import make_package_payload, make_resource_payload
-from validation.fixtures import assert_ok
+from gkh_validation.client.doi import DOIClient, doi_configured
+from gkh_validation.client.packages import PackagesClient
+from gkh_validation.client.resources import ResourcesClient
+from gkh_validation.factories import make_package_payload, make_resource_payload
+from gkh_validation.fixtures import assert_ok
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -44,10 +44,9 @@ def packages(http: Session, base_url: str) -> PackagesClient:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.publishes
 class TestResourceDOI:
-    def test_reserve_doi_for_resource(
-        self, doi: DOIClient, resources: ResourcesClient
-    ) -> None:
+    def test_reserve_doi_for_resource(self, doi: DOIClient, resources: ResourcesClient) -> None:
         """
         Reserve a DOI on a resource draft.
         The DOI is not yet registered — only reserved.
@@ -72,12 +71,8 @@ class TestResourceDOI:
             doi_value = doi.extract_doi(data) or (
                 data.get("pids", {}).get("doi", {}).get("identifier")
             )
-            assert doi_value is not None, (
-                f"Expected a DOI identifier in response, got: {data}"
-            )
-            assert doi_value.startswith("10."), (
-                f"DOI should start with '10.' — got: {doi_value}"
-            )
+            assert doi_value is not None, f"Expected a DOI identifier in response, got: {data}"
+            assert doi_value.startswith("10."), f"DOI should start with '10.' — got: {doi_value}"
         finally:
             # always clean up the draft
             resources.delete_draft(rid)
@@ -106,9 +101,7 @@ class TestResourceDOI:
         finally:
             resources.delete_draft(rid)
 
-    def test_discard_reserved_doi(
-        self, doi: DOIClient, resources: ResourcesClient
-    ) -> None:
+    def test_discard_reserved_doi(self, doi: DOIClient, resources: ResourcesClient) -> None:
         """
         A reserved but unpublished DOI can be discarded.
         After discard, the draft should have no DOI.
@@ -131,15 +124,11 @@ class TestResourceDOI:
             r_draft = doi.get_record_pids(rid)
             assert_ok(r_draft, 200)
             draft_doi = doi.extract_doi(r_draft.json())
-            assert draft_doi is None, (
-                f"Expected no DOI after discard, but found: {draft_doi}"
-            )
+            assert draft_doi is None, f"Expected no DOI after discard, but found: {draft_doi}"
         finally:
             resources.delete_draft(rid)
 
-    def test_publish_with_reserved_doi(
-        self, doi: DOIClient, resources: ResourcesClient
-    ) -> None:
+    def test_publish_with_reserved_doi(self, doi: DOIClient, resources: ResourcesClient) -> None:
         """
         Full workflow: create → reserve DOI → publish.
         The DOI should be registered (made public) on publish.
@@ -206,9 +195,7 @@ class TestResourceDOI:
             r_draft = resources.get_draft(rid)
             assert_ok(r_draft, 200)
             stored_doi = r_draft.json().get("pids", {}).get("doi", {}).get("identifier")
-            assert stored_doi == external_doi, (
-                f"Expected {external_doi}, got {stored_doi}"
-            )
+            assert stored_doi == external_doi, f"Expected {external_doi}, got {stored_doi}"
         finally:
             resources.delete_draft(rid)
 
@@ -221,10 +208,9 @@ class TestResourceDOI:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.publishes
 class TestPackageDOI:
-    def test_reserve_doi_for_package(
-        self, doi: DOIClient, packages: PackagesClient
-    ) -> None:
+    def test_reserve_doi_for_package(self, doi: DOIClient, packages: PackagesClient) -> None:
         """Reserve a DOI on a Knowledge Package draft."""
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
@@ -265,9 +251,7 @@ class TestPackageDOI:
         finally:
             packages.delete_draft(pid)
 
-    def test_publish_package_with_doi(
-        self, doi: DOIClient, packages: PackagesClient
-    ) -> None:
+    def test_publish_package_with_doi(self, doi: DOIClient, packages: PackagesClient) -> None:
         """Full workflow for a package: create → reserve DOI → publish."""
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)

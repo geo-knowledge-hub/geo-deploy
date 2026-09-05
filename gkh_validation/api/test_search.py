@@ -13,8 +13,8 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.search import SearchClient
-from validation.fixtures import assert_ok
+from gkh_validation.client.search import SearchClient
+from gkh_validation.fixtures import assert_ok
 
 
 @pytest.fixture()
@@ -116,9 +116,7 @@ class TestSpatialSearch:
         r = search.search_by_point(longitude=-0.187, latitude=5.603)
         assert_ok(r, 200)
 
-    def test_bbox_outside_coverage_returns_empty_or_valid(
-        self, search: SearchClient
-    ) -> None:
+    def test_bbox_outside_coverage_returns_empty_or_valid(self, search: SearchClient) -> None:
         """
         Bounding box in the middle of the Pacific Ocean.
         Should return a valid (probably empty) result — not an error.

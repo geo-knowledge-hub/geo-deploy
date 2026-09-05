@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from requests import Response
 
-from validation.client.base import BaseClient
-
+from gkh_validation.client.base import BaseClient
 
 #
 # Constant - HTTP Status code expected for when DOI is not configured
@@ -54,18 +53,14 @@ class DOIClient(BaseClient):
         The DOI is only registered (made public) when the record is published.
         Returns the reserved DOI identifier in the response.
         """
-        return self._post(
-            self._path(self._RECORDS_BASE, record_id, "draft", "pids", "doi")
-        )
+        return self._post(self._path(self._RECORDS_BASE, record_id, "draft", "pids", "doi"))
 
     def discard_doi_for_record(self, record_id: str) -> Response:
         """
         DELETE /api/records/{id}/draft/pids/doi
         Releases a reserved DOI that has not yet been published.
         """
-        return self._delete(
-            self._path(self._RECORDS_BASE, record_id, "draft", "pids", "doi")
-        )
+        return self._delete(self._path(self._RECORDS_BASE, record_id, "draft", "pids", "doi"))
 
     def get_record_pids(self, record_id: str) -> Response:
         """
@@ -83,18 +78,14 @@ class DOIClient(BaseClient):
         POST /api/packages/{id}/draft/pids/doi
         Reserves a DOI for a Knowledge Package draft.
         """
-        return self._post(
-            self._path(self._PACKAGES_BASE, package_id, "draft", "pids", "doi")
-        )
+        return self._post(self._path(self._PACKAGES_BASE, package_id, "draft", "pids", "doi"))
 
     def discard_doi_for_package(self, package_id: str) -> Response:
         """
         DELETE /api/packages/{id}/draft/pids/doi
         Releases a reserved DOI for a Knowledge Package.
         """
-        return self._delete(
-            self._path(self._PACKAGES_BASE, package_id, "draft", "pids", "doi")
-        )
+        return self._delete(self._path(self._PACKAGES_BASE, package_id, "draft", "pids", "doi"))
 
     # ------------------------------------------------------------------
     # Helpers

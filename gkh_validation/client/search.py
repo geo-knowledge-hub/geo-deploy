@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from requests import Response
 
-from validation.client.base import BaseClient
+from gkh_validation.client.base import BaseClient
 
 # The confirmed working spatial parameter for this GKH instance.
 # Change this constant if the instance is upgraded and the parameter changes.

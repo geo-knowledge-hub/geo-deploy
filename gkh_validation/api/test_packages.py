@@ -13,11 +13,11 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.doi import DOIClient
-from validation.client.packages import PackagesClient
-from validation.client.resources import ResourcesClient
-from validation.factories import make_package_payload, make_resource_payload
-from validation.fixtures import assert_ok
+from gkh_validation.client.doi import DOIClient
+from gkh_validation.client.packages import PackagesClient
+from gkh_validation.client.resources import ResourcesClient
+from gkh_validation.factories import make_package_payload, make_resource_payload
+from gkh_validation.fixtures import assert_ok
 
 
 @pytest.fixture()
@@ -84,12 +84,8 @@ class TestPackageDraft:
         assert_ok(r, 200)
         assert r.json()["id"] == package_draft["id"]
 
-    def test_update_draft_title(
-        self, packages: PackagesClient, package_draft: dict
-    ) -> None:
-        r = packages.fetch_and_update_title(
-            package_draft["id"], "Updated package title"
-        )
+    def test_update_draft_title(self, packages: PackagesClient, package_draft: dict) -> None:
+        r = packages.fetch_and_update_title(package_draft["id"], "Updated package title")
         assert_ok(r, 200)
         assert r.json()["metadata"]["title"] == "Updated package title"
 
@@ -116,6 +112,7 @@ class TestPackageDraft:
         ids = [h["id"] for h in r.json()["hits"]["hits"]]
         assert package_draft["id"] not in ids
 
+    @pytest.mark.publishes
     def test_open_edit_draft_from_published(
         self, packages: PackagesClient, published_package: dict
     ) -> None:
@@ -129,10 +126,9 @@ class TestPackageDraft:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.publishes
 class TestPackagePublish:
-    def test_publish_package(
-        self, packages: PackagesClient, http: Session, base_url: str
-    ) -> None:
+    def test_publish_package(self, packages: PackagesClient, http: Session, base_url: str) -> None:
         """Tests the publish action itself. Creates exactly one published record."""
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
@@ -149,9 +145,7 @@ class TestPackagePublish:
         r = packages.list_published(query=title)
         assert_ok(r, 200)
 
-    def test_list_versions(
-        self, packages: PackagesClient, published_package: dict
-    ) -> None:
+    def test_list_versions(self, packages: PackagesClient, published_package: dict) -> None:
         """Uses the shared published_package fixture — no new publish."""
         r = packages.list_versions(published_package["id"])
         assert_ok(r, 200)
@@ -160,16 +154,12 @@ class TestPackagePublish:
             pytest.skip("Versions empty — PID registration not configured.")
         assert len(hits) >= 1
 
-    def test_get_latest_version(
-        self, packages: PackagesClient, published_package: dict
-    ) -> None:
+    def test_get_latest_version(self, packages: PackagesClient, published_package: dict) -> None:
         """Uses the shared published_package fixture — no new publish."""
         r = packages.get_latest_version(published_package["id"])
         assert_ok(r, 200)
 
-    def test_create_new_version(
-        self, packages: PackagesClient, published_package: dict
-    ) -> None:
+    def test_create_new_version(self, packages: PackagesClient, published_package: dict) -> None:
         """Uses the shared published_package fixture — no new publish."""
         r = packages.create_new_version(published_package["id"])
         if r.status_code == 404:
@@ -192,9 +182,7 @@ class TestPackageFileUpload:
         pid = package_draft_with_files["id"]
         packages.upload_file(pid, "test.txt", b"Hello from pytest.")
 
-    def test_multiple_files(
-        self, packages: PackagesClient, package_draft_with_files: dict
-    ) -> None:
+    def test_multiple_files(self, packages: PackagesClient, package_draft_with_files: dict) -> None:
         pid = package_draft_with_files["id"]
         filenames = ["a.txt", "b.txt", "c.txt"]
         for fname in filenames:
@@ -214,9 +202,7 @@ class TestPackageFileUpload:
         keys = [e["key"] for e in r.json().get("entries", [])]
         assert filename in keys
 
-    def test_delete_file(
-        self, packages: PackagesClient, package_draft_with_files: dict
-    ) -> None:
+    def test_delete_file(self, packages: PackagesClient, package_draft_with_files: dict) -> None:
         pid = package_draft_with_files["id"]
         filename = "to-delete.txt"
         packages.upload_file(pid, filename, b"Delete me.")
@@ -267,24 +253,18 @@ class TestPackageResourceAssociation:
         r = packages.list_draft_resources(package_draft["id"])
         assert_ok(r, 200)
 
-    def test_associate_resource(
-        self, packages: PackagesClient, pkg_and_res: tuple
-    ) -> None:
+    def test_associate_resource(self, packages: PackagesClient, pkg_and_res: tuple) -> None:
         pkg_id, res_id = pkg_and_res
         r = packages.associate_resource(pkg_id, res_id)
         assert_ok(r, 200, 201, 204)
 
-    def test_dissociate_resource(
-        self, packages: PackagesClient, pkg_and_res: tuple
-    ) -> None:
+    def test_dissociate_resource(self, packages: PackagesClient, pkg_and_res: tuple) -> None:
         pkg_id, res_id = pkg_and_res
         packages.associate_resource(pkg_id, res_id)
         r = packages.dissociate_resource(pkg_id, res_id)
         assert_ok(r, 200, 204)
 
-    def test_add_resource_to_draft(
-        self, packages: PackagesClient, pkg_and_res: tuple
-    ) -> None:
+    def test_add_resource_to_draft(self, packages: PackagesClient, pkg_and_res: tuple) -> None:
         pkg_id, res_id = pkg_and_res
         packages.associate_resource(pkg_id, res_id)
         r = packages.add_resource_to_draft(pkg_id, res_id)
@@ -294,9 +274,7 @@ class TestPackageResourceAssociation:
                 f"{r.status_code} {r.text[:200]}"
             )
 
-    def test_remove_resource_from_draft(
-        self, packages: PackagesClient, pkg_and_res: tuple
-    ) -> None:
+    def test_remove_resource_from_draft(self, packages: PackagesClient, pkg_and_res: tuple) -> None:
         """
         DELETE /api/packages/{id}/draft/resources
         Remove a resource from the draft (but keep it in the package context).
@@ -354,6 +332,7 @@ class TestPackageResourcesImport:
       4. Call resources-import → v1 resources appear in v2 draft
     """
 
+    @pytest.mark.publishes
     def test_import_resources_from_previous_version(
         self,
         packages: PackagesClient,
@@ -410,15 +389,12 @@ class TestPackageResourcesImport:
             hits = data.get("hits", {}).get("hits", data.get("entries", []))
             ids = [h.get("id") or h.get("record_id") for h in hits]
             assert res_id in ids, (
-                f"Expected resource {res_id} to be imported into v2 draft, "
-                f"but found: {ids}"
+                f"Expected resource {res_id} to be imported into v2 draft, but found: {ids}"
             )
         finally:
             packages.delete_draft(new_pkg_id)
 
-    def test_import_on_fresh_draft_with_no_previous_version(
-        self, packages: PackagesClient
-    ) -> None:
+    def test_import_on_fresh_draft_with_no_previous_version(self, packages: PackagesClient) -> None:
         """
         Calling resources-import on a brand new draft (no previous version)
         should return an error — not crash the server.
@@ -432,8 +408,7 @@ class TestPackageResourcesImport:
             r = packages.import_resources_from_previous_version(pkg_id)
             # A new draft with no previous version should be rejected gracefully
             assert r.status_code in (400, 404, 422, 200, 204), (
-                f"Unexpected status {r.status_code} for import on fresh draft: "
-                f"{r.text[:200]}"
+                f"Unexpected status {r.status_code} for import on fresh draft: {r.text[:200]}"
             )
             # Must not be a server error
             assert r.status_code < 500, (

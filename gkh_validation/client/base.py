@@ -100,6 +100,4 @@ class BaseClient:
     @staticmethod
     def assert_ok(r: Response, *expected: int) -> None:
         codes = expected or (200,)
-        assert r.status_code in codes, (
-            f"Expected {codes}, got {r.status_code}\n{r.text[:600]}"
-        )
+        assert r.status_code in codes, f"Expected {codes}, got {r.status_code}\n{r.text[:600]}"

@@ -23,14 +23,23 @@ gkh-deploy = "gkh_deploy.cli:app"
 
 [project.entry-points."gkh.commands"]
 deploy = "gkh_deploy.cli:app"
+validate = "gkh_validation.cli:app"
+
+[project.entry-points.pytest11]
+gkh_validation = "gkh_validation.plugin"
+
+[project.optional-dependencies]
+validation = [
+    "pytest>=9.1.1",
+    "python-dotenv>=1.2.2",
+    "requests>=2.34.2",
+    "urllib3>=2.7.0",
+]
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
-    "python-dotenv>=1.2.2",
-    "requests>=2.34.2",
     "ruff>=0.16.5",
-    "urllib3>=2.7.0",
 ]
 
 [tool.uv.sources]
@@ -42,6 +51,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = ""
+module-name = ["gkh_deploy", "gkh_validation"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -51,9 +61,10 @@ markers = ["integration: renders against the real Helm chart; needs helm"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["validation"]
 
 [tool.ruff.lint]
+# the suite writes en dashes in prose and in coordinate ranges, on purpose
+allowed-confusables = ["–"]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "D", "ANN", "RUF"]
 ignore = ["D203", "D213", "D202", "ANN2", "ANN401"]
 
@@ -62,3 +73,11 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "ANN"]
+# the suite, its clients and its fixtures. The four modules above them
+# (__init__, cli, plugin, settings) are library code and keep the full rules
+"gkh_validation/api/*" = ["D", "ANN"]
+"gkh_validation/ui/*" = ["D", "ANN"]
+"gkh_validation/client/*" = ["D", "ANN"]
+"gkh_validation/conftest.py" = ["ANN", "F403"]
+"gkh_validation/fixtures.py" = ["D", "ANN"]
+"gkh_validation/factories.py" = ["D", "ANN"]

@@ -13,9 +13,9 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.communities import CommunitiesClient
-from validation.factories import make_community_payload
-from validation.fixtures import assert_ok
+from gkh_validation.client.communities import CommunitiesClient
+from gkh_validation.factories import make_community_payload
+from gkh_validation.fixtures import assert_ok
 
 
 @pytest.fixture()
@@ -68,9 +68,7 @@ class TestCommunityCRUD:
         r = communities.get(slug)
         assert_ok(r, 200)
 
-    def test_update_title(
-        self, communities: CommunitiesClient, community: dict
-    ) -> None:
+    def test_update_title(self, communities: CommunitiesClient, community: dict) -> None:
         r = communities.fetch_and_update_title(community["id"], "Updated by pytest")
         assert_ok(r, 200)
         assert r.json()["metadata"]["title"] == "Updated by pytest"
@@ -84,14 +82,10 @@ class TestCommunityCRUD:
 
 
 class TestCommunityMembers:
-    def test_list_members(
-        self, communities: CommunitiesClient, community: dict
-    ) -> None:
+    def test_list_members(self, communities: CommunitiesClient, community: dict) -> None:
         r = communities.list_members(community["id"])
         assert r.status_code in (200, 404)
 
-    def test_list_public_members(
-        self, communities: CommunitiesClient, community: dict
-    ) -> None:
+    def test_list_public_members(self, communities: CommunitiesClient, community: dict) -> None:
         r = communities.list_public_members(community["id"])
         assert r.status_code in (200, 404)

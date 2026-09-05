@@ -131,13 +131,18 @@ dependencies = [
     { name = "typer" },
 ]
 
-[package.dev-dependencies]
-dev = [
+[package.optional-dependencies]
+validation = [
     { name = "pytest" },
     { name = "python-dotenv" },
     { name = "requests" },
-    { name = "ruff" },
     { name = "urllib3" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -145,17 +150,19 @@ requires-dist = [
     { name = "gkh-cli", directory = "../gkh-cli" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydash", specifier = ">=8.1.0" },
+    { name = "pytest", marker = "extra == 'validation'", specifier = ">=9.1.1" },
+    { name = "python-dotenv", marker = "extra == 'validation'", specifier = ">=1.2.2" },
     { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "requests", marker = "extra == 'validation'", specifier = ">=2.34.2" },
     { name = "typer", specifier = ">=0.27.2" },
+    { name = "urllib3", marker = "extra == 'validation'", specifier = ">=2.7.0" },
 ]
+provides-extras = ["validation"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=9.1.1" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "requests", specifier = ">=2.34.2" },
     { name = "ruff", specifier = ">=0.16.5" },
-    { name = "urllib3", specifier = ">=2.7.0" },
 ]
 
 [[package]]

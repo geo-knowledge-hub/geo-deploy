@@ -13,10 +13,10 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.packages import PackagesClient
-from validation.client.resources import ResourcesClient
-from validation.factories import make_package_payload, make_resource_payload
-from validation.fixtures import assert_ok
+from gkh_validation.client.packages import PackagesClient
+from gkh_validation.client.resources import ResourcesClient
+from gkh_validation.factories import make_package_payload, make_resource_payload
+from gkh_validation.fixtures import assert_ok
 
 
 @pytest.fixture()
@@ -74,6 +74,7 @@ class TestPackageDraftBehaviour:
         assert_ok(r, 200)
         assert isinstance(r.json().get("entries", []), list)
 
+    @pytest.mark.publishes
     def test_edit_draft_opens_from_published(self, packages: PackagesClient) -> None:
         r = packages.create_draft(make_package_payload())
         assert_ok(r, 201)
@@ -107,9 +108,7 @@ class TestResourceDraftBehaviour:
         assert_ok(r, 200)
         assert r.json()["metadata"]["title"] == resource_draft["metadata"]["title"]
 
-    def test_draft_update(
-        self, resources: ResourcesClient, resource_draft: dict
-    ) -> None:
+    def test_draft_update(self, resources: ResourcesClient, resource_draft: dict) -> None:
         r = resources.fetch_and_update_title(resource_draft["id"], "Updated title")
         assert_ok(r, 200)
         assert r.json()["metadata"]["title"] == "Updated title"

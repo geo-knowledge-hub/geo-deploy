@@ -13,7 +13,7 @@ from __future__ import annotations
 import requests
 from requests import Session
 
-from validation.fixtures import assert_ok
+from gkh_validation.fixtures import assert_ok
 
 
 class TestHomepage:
@@ -51,9 +51,7 @@ class TestHomepage:
         r = requests.get(f"{base_url}/robots.txt", verify=verify_tls, timeout=10)
         assert r.status_code in (200, 404), f"/robots.txt returned {r.status_code}"
 
-    def test_static_assets_no_server_error(
-        self, base_url: str, verify_tls: bool
-    ) -> None:
+    def test_static_assets_no_server_error(self, base_url: str, verify_tls: bool) -> None:
         r = requests.get(
             f"{base_url}/static/",
             verify=verify_tls,
@@ -71,9 +69,7 @@ class TestPublicSearchPage:
     """Public /search page — no login needed."""
 
     def test_search_page_loads(self, base_url: str, verify_tls: bool) -> None:
-        r = requests.get(
-            f"{base_url}/search", verify=verify_tls, timeout=15, allow_redirects=True
-        )
+        r = requests.get(f"{base_url}/search", verify=verify_tls, timeout=15, allow_redirects=True)
         assert r.status_code == 200
 
     def test_api_search_public(self, anon_http: Session, base_url: str) -> None:

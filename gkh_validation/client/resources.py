@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from requests import Response
 
-from validation.client.base import BaseClient
+from gkh_validation.client.base import BaseClient
 
 
 class ResourcesClient(BaseClient):
@@ -47,9 +47,7 @@ class ResourcesClient(BaseClient):
 
     def search(self, query: str = "", page: int = 1, size: int = 5) -> Response:
         """GET /api/records with full pagination support."""
-        return self._get(
-            self._resource_path(), params={"q": query, "page": page, "size": size}
-        )
+        return self._get(self._resource_path(), params={"q": query, "page": page, "size": size})
 
     # ------------------------------------------------------------------
     # Draft management
@@ -96,9 +94,7 @@ class ResourcesClient(BaseClient):
             json=[{"key": filename}],
         )
 
-    def upload_file_content(
-        self, record_id: str, filename: str, content: bytes
-    ) -> Response:
+    def upload_file_content(self, record_id: str, filename: str, content: bytes) -> Response:
         """PUT /api/records/{id}/draft/files/{filename}/content — upload bytes."""
         return self._put_binary(
             self._resource_path(record_id, "draft", "files", filename, "content"),
@@ -107,9 +103,7 @@ class ResourcesClient(BaseClient):
 
     def commit_file(self, record_id: str, filename: str) -> Response:
         """POST /api/records/{id}/draft/files/{filename}/commit — finalise upload."""
-        return self._post(
-            self._resource_path(record_id, "draft", "files", filename, "commit")
-        )
+        return self._post(self._resource_path(record_id, "draft", "files", filename, "commit"))
 
     def upload_file(self, record_id: str, filename: str, content: bytes) -> None:
         """

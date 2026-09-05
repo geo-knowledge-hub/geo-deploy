@@ -13,10 +13,10 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.doi import DOIClient
-from validation.client.resources import ResourcesClient
-from validation.factories import make_resource_payload
-from validation.fixtures import assert_ok
+from gkh_validation.client.doi import DOIClient
+from gkh_validation.client.resources import ResourcesClient
+from gkh_validation.factories import make_resource_payload
+from gkh_validation.fixtures import assert_ok
 
 # ---------------------------------------------------------------------------
 # Client fixture — function-scoped so each test gets a clean client object
@@ -87,12 +87,8 @@ class TestResourceDraft:
         assert_ok(r, 200)
         assert r.json()["id"] == resource_draft["id"]
 
-    def test_update_draft_title(
-        self, resources: ResourcesClient, resource_draft: dict
-    ) -> None:
-        r = resources.fetch_and_update_title(
-            resource_draft["id"], "Updated resource title"
-        )
+    def test_update_draft_title(self, resources: ResourcesClient, resource_draft: dict) -> None:
+        r = resources.fetch_and_update_title(resource_draft["id"], "Updated resource title")
         assert_ok(r, 200)
         assert r.json()["metadata"]["title"] == "Updated resource title"
 
@@ -120,9 +116,7 @@ class TestResourceDraft:
         ids = [h["id"] for h in r.json()["hits"]["hits"]]
         assert resource_draft["id"] not in ids, "Draft visible in public search"
 
-    def test_list_draft_files_empty(
-        self, resources: ResourcesClient, resource_draft: dict
-    ) -> None:
+    def test_list_draft_files_empty(self, resources: ResourcesClient, resource_draft: dict) -> None:
         r = resources.list_files(resource_draft["id"])
         assert_ok(r, 200)
 
@@ -132,6 +126,7 @@ class TestResourceDraft:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.publishes
 class TestResourcePublish:
     def test_publish_resource(
         self, resources: ResourcesClient, http: Session, base_url: str
@@ -154,17 +149,13 @@ class TestResourcePublish:
         r = resources.list_published(query=title)
         assert_ok(r, 200)
 
-    def test_list_versions(
-        self, resources: ResourcesClient, published_resource: dict
-    ) -> None:
+    def test_list_versions(self, resources: ResourcesClient, published_resource: dict) -> None:
         """Uses the shared published_resource fixture — no new publish."""
         r = resources.list_versions(published_resource["id"])
         assert_ok(r, 200)
         assert isinstance(r.json()["hits"]["hits"], list)
 
-    def test_create_new_version(
-        self, resources: ResourcesClient, published_resource: dict
-    ) -> None:
+    def test_create_new_version(self, resources: ResourcesClient, published_resource: dict) -> None:
         """Uses the shared published_resource fixture — no new publish."""
         r = resources.create_new_version(published_resource["id"])
         if r.status_code == 404:
@@ -201,9 +192,7 @@ class TestResourceFileUpload:
         keys = [e["key"] for e in r.json().get("entries", [])]
         assert filename in keys
 
-    def test_delete_file(
-        self, resources: ResourcesClient, resource_draft_with_files: dict
-    ) -> None:
+    def test_delete_file(self, resources: ResourcesClient, resource_draft_with_files: dict) -> None:
         rid = resource_draft_with_files["id"]
         filename = "to-delete.txt"
         resources.upload_file(rid, filename, b"Delete me.")

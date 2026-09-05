@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from requests import Response
 
-from validation.client.base import BaseClient
+from gkh_validation.client.base import BaseClient
 
 
 class CommunitiesClient(BaseClient):
