@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 from requests import Session
 
-from validation.client.doi import DOIClient
+from validation.client.doi import DOIClient, doi_configured
 from validation.client.packages import PackagesClient
 from validation.client.resources import ResourcesClient
 from validation.factories import make_package_payload, make_resource_payload
@@ -39,14 +39,6 @@ def packages(http: Session, base_url: str) -> PackagesClient:
     return PackagesClient(http, base_url)
 
 
-def _doi_supported(r) -> bool:
-    """
-    Returns False if the instance has no DOI provider configured.
-    400 or 501 both indicate DOI service is not available.
-    """
-    return r.status_code not in (400, 404, 501, 503)
-
-
 # ---------------------------------------------------------------------------
 # Resource DOI tests
 # ---------------------------------------------------------------------------
@@ -67,7 +59,7 @@ class TestResourceDOI:
         try:
             r_doi = doi.reserve_doi_for_record(rid)
 
-            if not _doi_supported(r_doi):
+            if not doi_configured(r_doi):
                 pytest.skip(
                     f"DOI provider not configured on this instance "
                     f"({r_doi.status_code}: {r_doi.text[:100]})"
@@ -102,7 +94,7 @@ class TestResourceDOI:
 
         try:
             r_doi = doi.reserve_doi_for_record(rid)
-            if not _doi_supported(r_doi):
+            if not doi_configured(r_doi):
                 pytest.skip("DOI provider not configured on this instance.")
             assert_ok(r_doi, 200, 201)
 
@@ -127,7 +119,7 @@ class TestResourceDOI:
 
         try:
             r_doi = doi.reserve_doi_for_record(rid)
-            if not _doi_supported(r_doi):
+            if not doi_configured(r_doi):
                 pytest.skip("DOI provider not configured on this instance.")
             assert_ok(r_doi, 200, 201)
 
@@ -157,7 +149,7 @@ class TestResourceDOI:
         rid = r.json()["id"]
 
         r_doi = doi.reserve_doi_for_record(rid)
-        if not _doi_supported(r_doi):
+        if not doi_configured(r_doi):
             resources.delete_draft(rid)
             pytest.skip("DOI provider not configured on this instance.")
         assert_ok(r_doi, 200, 201)
@@ -203,7 +195,7 @@ class TestResourceDOI:
 
         r = resources.create_draft(payload)
 
-        if r.status_code == 400:
+        if not doi_configured(r):
             pytest.skip(f"External DOI not accepted by this instance: {r.text[:200]}")
 
         assert_ok(r, 201)
@@ -241,7 +233,7 @@ class TestPackageDOI:
         try:
             r_doi = doi.reserve_doi_for_package(pid)
 
-            if not _doi_supported(r_doi):
+            if not doi_configured(r_doi):
                 pytest.skip(
                     f"DOI provider not configured on this instance "
                     f"({r_doi.status_code}: {r_doi.text[:100]})"
@@ -264,7 +256,7 @@ class TestPackageDOI:
 
         try:
             r_doi = doi.reserve_doi_for_package(pid)
-            if not _doi_supported(r_doi):
+            if not doi_configured(r_doi):
                 pytest.skip("DOI provider not configured on this instance.")
             assert_ok(r_doi, 200, 201)
 
@@ -282,7 +274,7 @@ class TestPackageDOI:
         pid = r.json()["id"]
 
         r_doi = doi.reserve_doi_for_package(pid)
-        if not _doi_supported(r_doi):
+        if not doi_configured(r_doi):
             packages.delete_draft(pid)
             pytest.skip("DOI provider not configured on this instance.")
         assert_ok(r_doi, 200, 201)

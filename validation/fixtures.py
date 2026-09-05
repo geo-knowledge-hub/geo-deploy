@@ -18,7 +18,7 @@ from requests import Session
 
 from validation.client.base import BaseClient
 from validation.client.communities import CommunitiesClient
-from validation.client.doi import DOIClient
+from validation.client.doi import DOIClient, doi_configured
 from validation.client.packages import PackagesClient
 from validation.client.resources import ResourcesClient
 from validation.factories import (
@@ -162,6 +162,13 @@ def published_resource(http: Session, base_url: str) -> Generator[dict, None, No
 
     # Reserve DOI before publishing
     r_doi = doi.reserve_doi_for_record(rid)
+
+    if not doi_configured(r_doi):
+        pytest.skip(
+            f"DOI provider not configured on this instance ({r_doi.status_code}); "
+            "publishing here requires a reserved DOI."
+        )
+
     assert r_doi.status_code in (200, 201), (
         f"Failed to reserve DOI: {r_doi.status_code} {r_doi.text}"
     )
@@ -222,6 +229,13 @@ def published_package(http: Session, base_url: str) -> Generator[dict, None, Non
 
     # Reserve DOI before publishing
     r_doi = doi.reserve_doi_for_package(pid)
+
+    if not doi_configured(r_doi):
+        pytest.skip(
+            f"DOI provider not configured on this instance ({r_doi.status_code}); "
+            "publishing here requires a reserved DOI."
+        )
+
     assert r_doi.status_code in (200, 201), (
         f"Failed to reserve DOI: {r_doi.status_code} {r_doi.text}"
     )

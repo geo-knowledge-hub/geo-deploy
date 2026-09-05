@@ -15,6 +15,20 @@ from requests import Response
 from validation.client.base import BaseClient
 
 
+#
+# Constant - HTTP Status code expected for when DOI is not configured
+#
+NOT_CONFIGURED = (400, 404, 500, 501, 503)
+
+
+#
+# Utilities
+#
+def doi_configured(r: Response) -> bool:
+    """Check if the HTTP status returned indicates the DOI is configured or not."""
+    return r.status_code not in NOT_CONFIGURED
+
+
 class DOIClient(BaseClient):
     """
     Page Object for DOI reservation and management.
