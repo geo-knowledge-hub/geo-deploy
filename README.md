@@ -51,10 +51,24 @@ No password appears anywhere in the bundle. `secrets.sh` generates them into Kub
 `validation/` is a pytest suite that exercises a deployed instance over its API and UI:
 
 ```bash
-uv run pytest validation/ -v
+GKH_BASE_URL=https://gkhub.example.org GKH_API_TOKEN=... uv run pytest validation/ -v
 ```
 
-See [`validation/README.md`](validation/README.md) for configuration and for adding tests.
+To centralize and easily manage configurations, it is also possible to use a `.env` file. To use it, you can copy the [`.env.example`](./.env.example) file and fill it in. It is also possible to do configure using a `.env` file. 
+
+Both variables can live in a `.env` file instead; copy  and fill it in. Add `GKH_NO_VERIFY_TLS=true` for an instance with a self-signed certificate.
+
+Mint the token on the instance itself:
+
+```bash
+kubectl exec -n invenio deploy/invenio-worker -c worker -- \
+  invenio tokens create -n validation -u you@example.org
+```
+
+Tests that need a DOI skip themselves when the instance has no DataCite provider, which is what `datacite.enabled: false` produces.
+
+
+
 
 ## Development
 
