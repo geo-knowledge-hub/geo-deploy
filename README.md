@@ -44,7 +44,7 @@ gkh deploy bootstrap
 
 This prints the seven steps that create the database, roles, administrator and vocabularies, with the `invenio` commands each one runs. Nothing is executed and no cluster is contacted. Run them in the worker container yourself, or use `deploy/bootstrap.sh`, which is the same sequence packaged as a script that finds the pod for you.
 
-No password appears anywhere in the bundle. `secrets.sh` generates them into Kubernetes Secrets and `values.yaml` refers to those, so credentials reach the pods through `secretKeyRef` rather than as literal environment values.
+No password appears anywhere in the bundle. The `secrets.sh` script generates them into Kubernetes Secrets and `values.yaml` refers to those, so credentials reach the pods through `secretKeyRef` rather than as literal environment values.
 
 ## Validating an instance
 
@@ -54,21 +54,7 @@ No password appears anywhere in the bundle. `secrets.sh` generates them into Kub
 GKH_BASE_URL=https://gkhub.example.org GKH_API_TOKEN=... uv run pytest validation/ -v
 ```
 
-To centralize and easily manage configurations, it is also possible to use a `.env` file. To use it, you can copy the [`.env.example`](./.env.example) file and fill it in. It is also possible to do configure using a `.env` file. 
-
-Both variables can live in a `.env` file instead; copy  and fill it in. Add `GKH_NO_VERIFY_TLS=true` for an instance with a self-signed certificate.
-
-Mint the token on the instance itself:
-
-```bash
-kubectl exec -n invenio deploy/invenio-worker -c worker -- \
-  invenio tokens create -n validation -u you@example.org
-```
-
-Tests that need a DOI skip themselves when the instance has no DataCite provider, which is what `datacite.enabled: false` produces.
-
-
-
+To centralize and easily manage configurations, it is also possible to use a `.env` file. To use it, you can copy the [`.env.example`](./.env.example) file and fill it in.
 
 ## Development
 
@@ -76,15 +62,11 @@ Tests that need a DOI skip themselves when the instance has no DataCite provider
 uv sync
 uv run pytest                                        # the CLI's own tests
 uv run ruff check . && uv run ruff format --check .  # lint and format
-
-# render every bundle against the real chart. Needs helm in PATH
-GKH_CHART_PATH=/path/to/helm-invenio/charts/invenio uv run pytest -m integration
 ```
 
 ## Contributing
 
-Contributions are welcome. Please open an issue to discuss significant changes, and ensure
-tests, linting and type checks pass before submitting a pull request.
+Contributions are welcome. Please open an issue to discuss significant changes, and ensure tests, linting and type checks pass before submitting a pull request.
 
 ## License
 
