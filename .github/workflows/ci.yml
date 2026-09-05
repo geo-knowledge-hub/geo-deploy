@@ -13,7 +13,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - run: uv sync
+      - run: uv sync --extra validation
       - run: uv run ruff check .
       - run: uv run ruff format --check .
 
@@ -29,8 +29,10 @@ jobs:
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
-      - run: uv sync
+      - run: uv sync --extra validation
       - run: uv run pytest -q
+      - name: The validation suite still collects without an instance
+        run: uv run --extra validation pytest -c gkh_validation/pytest.ini --pyargs gkh_validation --collect-only -q
 
   chart:
     runs-on: ubuntu-latest
