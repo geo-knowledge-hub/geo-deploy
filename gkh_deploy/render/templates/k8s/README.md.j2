@@ -77,11 +77,22 @@ The `fixtures` step takes several minutes. If it reports search timeouts, the Op
 
 **5. Verify**
 
-Point the test suite in `validation/` at the instance:
+`gkh validate` drives the instance over its API and UI and reports what does not hold. It needs a personal token, which the instance itself can mint:
 
 ```bash
-GKH_BASE_URL=https://{{ settings.hostname }} GKH_API_TOKEN=... pytest validation/ -v
+WORKER=$(kubectl get deployment -n {{ settings.namespace }} -l '{{ selector }}' -o name)
+
+kubectl exec -n {{ settings.namespace }} "$WORKER" -c {{ container }} -- \
+  invenio tokens create -n validation -u {{ settings.admin.email }}
 ```
+
+Then, point the suite at the instance:
+
+```bash
+gkh --url https://{{ settings.hostname }} --token <token> validate run
+```
+
+Add `--no-verify-tls` when the certificate is self-signed. The tests that publish content are skipped unless you pass `--allow-publish`.
 
 ## What this bundle assumes
 
