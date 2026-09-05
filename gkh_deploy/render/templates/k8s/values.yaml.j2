@@ -69,8 +69,11 @@ postgresql:
     username: invenio
     database: invenio
     existingSecret: "{{ settings.secrets.postgresql }}"
+    # Both keys are named here rather than left to the subchart defaults, so the
+    # script secrets.sh creates and the keys the pods read cannot drift apart.
     secretKeys:
       userPasswordKey: password
+      adminPasswordKey: postgres-password
 
 redis:
   enabled: true
