@@ -36,15 +36,21 @@ gkh deploy generate -o deploy/
 
 You get `values.yaml`, `secrets.sh`, `bootstrap.sh`, a copy of the configuration, and a `README.md` carrying the `helm` commands for that bundle. Regenerate rather than editing these by hand.
 
-Finally, once `helm install` has settled, run the post-install sequence:
+Now you have these files generated, you can follow the `README.md` available in the `deploy/`.
+
+> [!NOTE]
+> No password appears anywhere in the bundle. The `secrets.sh` script generates them into Kubernetes Secrets and `values.yaml` refers to those, so credentials reach the pods through `secretKeyRef` rather than as literal environment values.
+
+Then, once you have the instance up and running, you can execute the post-install commands. These commands are the same ones executed by the `bootstrap.sh`. If you want a more manual approach, you can take the post-install steps and execute them:
 
 ```bash
 gkh deploy bootstrap
 ```
 
-This prints the seven steps that create the database, roles, administrator and vocabularies, with the `invenio` commands each one runs. Nothing is executed and no cluster is contacted. Run them in the worker container yourself, or use `deploy/bootstrap.sh`, which is the same sequence packaged as a script that finds the pod for you.
+This command prints the steps to create a database, roles, administrator and vocabularies required by the GEO Knowledge Hub. Nothing is executed and no cluster is contacted. So, you can run them in the worker container yourself.
 
-No password appears anywhere in the bundle. The `secrets.sh` script generates them into Kubernetes Secrets and `values.yaml` refers to those, so credentials reach the pods through `secretKeyRef` rather than as literal environment values.
+> [!NOTE]
+> The manual approach is recommended for anyone setting up a production instance who needs to ensure that everything is controlled and behaves as expected.
 
 ## Validating an instance
 
