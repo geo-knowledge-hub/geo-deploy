@@ -51,10 +51,18 @@ Wait for the pods to settle:
 kubectl get pods -n {{ settings.namespace }} -w
 ```
 
+Wait for the **worker** pod, not for all of them. The web pod restarts until step 4 has run: its startup probe asks the application for a page and there is no database schema yet, so it answers 500. That is expected, and it settles on its own once the sequence below has created the schema.
+
 **4. Run the post-install sequence**
 
 ```bash
 ./bootstrap.sh
+```
+
+No step can be applied twice. If one fails, fix the cause and resume from it rather than starting over. For example, below we continue the execution starting from the `roles` creation:
+
+```bash
+./bootstrap.sh roles
 ```
 
 To read the steps without running them, and to substitute the administrator password yourself:
