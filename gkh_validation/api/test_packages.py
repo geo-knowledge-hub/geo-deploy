@@ -10,6 +10,9 @@
 
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
+
 import pytest
 from requests import Session
 
@@ -18,6 +21,34 @@ from gkh_validation.client.packages import PackagesClient
 from gkh_validation.client.resources import ResourcesClient
 from gkh_validation.factories import make_package_payload, make_resource_payload
 from gkh_validation.fixtures import assert_ok
+
+# The draft resource listing uses search operation, which requires index to be finished.
+# So, to avoid issues, it is better to settles a fraction of a second after
+# the write.
+SETTLE = 10.0
+
+
+#
+# Auxiliary functions
+#
+def draft_resource_ids(packages: PackagesClient, package_id: str) -> list[str]:
+    r = packages.list_draft_resources(package_id)
+
+    assert_ok(r, 200)
+
+    return [hit["id"] for hit in r.json()["hits"]["hits"]]
+
+
+def settles(condition: Callable[[], bool], timeout: float = SETTLE) -> bool:
+    deadline = time.monotonic() + timeout
+
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+
+        time.sleep(0.2)
+
+    return False
 
 
 @pytest.fixture()
@@ -267,12 +298,12 @@ class TestPackageResourceAssociation:
     def test_add_resource_to_draft(self, packages: PackagesClient, pkg_and_res: tuple) -> None:
         pkg_id, res_id = pkg_and_res
         packages.associate_resource(pkg_id, res_id)
-        r = packages.add_resource_to_draft(pkg_id, res_id)
-        if r.status_code not in (200, 201, 204):
-            pytest.skip(
-                f"add_resource_to_draft unsupported on this instance: "
-                f"{r.status_code} {r.text[:200]}"
-            )
+
+        assert_ok(packages.add_resource_to_draft(pkg_id, res_id), 200, 201, 204)
+
+        assert settles(lambda: res_id in draft_resource_ids(packages, pkg_id)), (
+            f"Resource {res_id} never appeared in the draft"
+        )
 
     def test_remove_resource_from_draft(self, packages: PackagesClient, pkg_and_res: tuple) -> None:
         """
@@ -283,32 +314,20 @@ class TestPackageResourceAssociation:
 
         # First associate and add to draft
         packages.associate_resource(pkg_id, res_id)
-        r_add = packages.add_resource_to_draft(pkg_id, res_id)
-        if r_add.status_code not in (200, 201, 204):
-            pytest.skip("Could not add resource to draft — skipping remove test.")
+
+        assert_ok(packages.add_resource_to_draft(pkg_id, res_id), 200, 201, 204)
 
         # Confirm it is in the draft
-        r_list = packages.list_draft_resources(pkg_id)
-        assert_ok(r_list, 200)
-        data = r_list.json()
-        hits = data.get("hits", {}).get("hits", data.get("entries", []))
-        ids_before = [h.get("id") or h.get("record_id") for h in hits]
-        assert res_id in ids_before, (
-            f"Resource {res_id} not found in draft before removal: {ids_before}"
+        assert settles(lambda: res_id in draft_resource_ids(packages, pkg_id)), (
+            f"Resource {res_id} never appeared in the draft before removal"
         )
 
         # Remove from draft
-        r_remove = packages.remove_resource_from_draft(pkg_id, res_id)
-        assert_ok(r_remove, 200, 204)
+        assert_ok(packages.remove_resource_from_draft(pkg_id, res_id), 200, 204)
 
         # Confirm it is no longer in the draft
-        r_list2 = packages.list_draft_resources(pkg_id)
-        assert_ok(r_list2, 200)
-        data2 = r_list2.json()
-        hits2 = data2.get("hits", {}).get("hits", data2.get("entries", []))
-        ids_after = [h.get("id") or h.get("record_id") for h in hits2]
-        assert res_id not in ids_after, (
-            f"Resource {res_id} still in draft after removal: {ids_after}"
+        assert settles(lambda: res_id not in draft_resource_ids(packages, pkg_id)), (
+            f"Resource {res_id} still in draft after removal"
         )
 
 
@@ -354,10 +373,7 @@ class TestPackageResourcesImport:
         pkg_id = pkg_r.json()["id"]
 
         packages.associate_resource(pkg_id, res_id)
-        r_add = packages.add_resource_to_draft(pkg_id, res_id)
-        if r_add.status_code not in (200, 201, 204):
-            packages.delete_draft(pkg_id)
-            pytest.skip("Could not add resource to draft — skipping import test.")
+        assert_ok(packages.add_resource_to_draft(pkg_id, res_id), 200, 201, 204)
 
         # 3. Publish the package (v1)
         r_pub = packages.publish(pkg_id)
@@ -383,13 +399,8 @@ class TestPackageResourcesImport:
             assert_ok(r_import, 200, 201, 204)
 
             # 6. Confirm the resource from v1 appears in v2 draft
-            r_list = packages.list_draft_resources(new_pkg_id)
-            assert_ok(r_list, 200)
-            data = r_list.json()
-            hits = data.get("hits", {}).get("hits", data.get("entries", []))
-            ids = [h.get("id") or h.get("record_id") for h in hits]
-            assert res_id in ids, (
-                f"Expected resource {res_id} to be imported into v2 draft, but found: {ids}"
+            assert settles(lambda: res_id in draft_resource_ids(packages, new_pkg_id)), (
+                f"Expected resource {res_id} to be imported into the v2 draft"
             )
         finally:
             packages.delete_draft(new_pkg_id)

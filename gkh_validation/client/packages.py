@@ -163,19 +163,14 @@ class PackagesClient(BaseClient):
     def add_resource_to_draft(self, package_id: str, resource_id: str) -> Response:
         """
         POST /api/packages/{id}/draft/resources.
-        Tries multiple body shapes across GKH versions.
+
+        The draft endpoints take `resources`, where the context actions above take
+        `records`. Sending the latter here answers 400 "records: Unknown field."
         """
-        path = self._resource_path(package_id, "draft", "resources")
-        for body in [
-            {"records": [{"id": resource_id}]},
-            {"ids": [resource_id]},
-            {"record_ids": [resource_id]},
-            [{"id": resource_id}],
-        ]:
-            r = self._post(path, json=body)
-            if r.status_code in (200, 201, 204):
-                return r
-        return r  # return last response for caller to inspect
+        return self._post(
+            self._resource_path(package_id, "draft", "resources"),
+            json={"resources": [{"id": resource_id}]},
+        )
 
     def list_draft_resources(self, package_id: str) -> Response:
         """GET /api/packages/{id}/draft/resources."""
@@ -190,7 +185,7 @@ class PackagesClient(BaseClient):
         """
         return self._delete(
             self._resource_path(package_id, "draft", "resources"),
-            json={"records": [{"id": resource_id}]},
+            json={"resources": [{"id": resource_id}]},
         )
 
     def import_resources_from_previous_version(self, package_id: str) -> Response:
