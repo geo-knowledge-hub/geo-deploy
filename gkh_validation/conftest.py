@@ -20,15 +20,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-import urllib3
 
 from gkh_validation.factories import *
 from gkh_validation.fixtures import *
 from gkh_validation.settings import load_env_file
-
-# instances with a self-signed certificate are checked with `verify=False`, which
-# is exactly what this warning reports
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 @pytest.fixture(scope="session", autouse=True)
