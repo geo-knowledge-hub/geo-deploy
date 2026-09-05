@@ -48,18 +48,42 @@ No password appears anywhere in the bundle. The `secrets.sh` script generates th
 
 ## Validating an instance
 
-`validation/` is a pytest suite that exercises a deployed instance over its API and UI:
+`gkh validate` drives a running instance over its API and UI and reports what does not work well. It ships with `gkh deploy`, behind the `validation` extra:
 
 ```bash
-GKH_BASE_URL=https://gkhub.example.org GKH_API_TOKEN=... uv run pytest validation/ -v
+uv tool install --with 'gkh-deploy[validation]' gkh-cli
 ```
 
-To centralize and easily manage configurations, it is also possible to use a `.env` file. To use it, you can copy the [`.env.example`](./.env.example) file and fill it in.
+Point it at an instance and run it:
+
+```bash
+gkh --url https://gkhub.example.org --token ... validate run
+```
+
+By default, `validate run` will run the entire test suite. To validate only a specific part of the instance, use the `--suite` flag. For example, to run only the UI:
+
+```bash
+gkh --url https://gkhub.example.org --token ... validate run --suite ui
+```
+
+For the API, the approach is the same:
+
+```bash
+gkh --url https://gkhub.example.org --token ... validate run --suite api
+```
+
+Please note that when you are testing the API, the tests has creation operations, including record publication, DOI minting, file upload and others. As these actions ca not be undone, they are skipped by default. To active them, you need to use the flag `--allow-publish` as presented below:
+
+```bash
+gkh --url https://gkhub.example.org --token ... validate run --allow-publish
+```
+
+Please note that it is possible to configure the instance, token and TLS using a `.env` file. You can create one by copying [`.env.example`](./.env.example) to `.env` and filling it in.
 
 ## Development
 
 ```bash
-uv sync
+uv sync --extra validation
 uv run pytest                                        # the CLI's own tests
 uv run ruff check . && uv run ruff format --check .  # lint and format
 ```
