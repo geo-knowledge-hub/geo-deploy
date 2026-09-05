@@ -16,7 +16,7 @@ from gkh_cli import context_of
 
 from gkh_deploy import profiles
 from gkh_deploy import settings as settings_module
-from gkh_deploy.operations.common import DEFAULT_CONFIG, Force, Profile, fail_on
+from gkh_deploy.operations.common import DEFAULT_CONFIG, Force, Overrides, Profile, fail_on
 
 
 def init(
@@ -27,6 +27,7 @@ def init(
     profile: Profile = "minimal",
     hostname: Annotated[str, typer.Option("--hostname", help="Hostname users will reach.")] = "",
     admin_email: Annotated[str, typer.Option("--admin-email", help="Administrator email.")] = "",
+    set_: Overrides = None,
     non_interactive: Annotated[
         bool, typer.Option("--non-interactive", help="Never prompt; fail if an answer is missing.")
     ] = False,
@@ -45,13 +46,15 @@ def init(
 
         admin_email (str): The administrator email.
 
+        set_ (list[str] | None): The overrides to apply to the profile.
+
         non_interactive (bool): Whether to run non-interactively.
 
         force (Force): Whether to force overwrite.
 
     Raises:
         typer.Exit: when the output directory already exists and force is False.
-        typer.BadParameter: when the profile is not found.
+        typer.BadParameter: when the profile is not found, or an override is malformed.
     """
     if output.exists() and not force:
         typer.echo(f"gkh deploy: {output} already exists; pass --force to overwrite", err=True)
@@ -79,6 +82,13 @@ def init(
     # update the answers
     answers["hostname"] = hostname
     answers["admin"]["email"] = admin_email
+
+    # apply the overrides
+    try:
+        answers = settings_module.apply_overrides(answers, set_ or [])
+
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--set") from exc
 
     # validate the answers
     fail_on(settings_module.validate(answers))

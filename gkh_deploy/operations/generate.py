@@ -20,6 +20,7 @@ from gkh_deploy.operations.common import (
     DEFAULT_OUTPUT,
     ConfigFile,
     Force,
+    Overrides,
     load_settings,
     report,
 )
@@ -31,10 +32,7 @@ def generate(
     output: Annotated[
         Path, typer.Option("--output", "-o", help="Where to write.")
     ] = DEFAULT_OUTPUT,
-    set_: Annotated[
-        list[str] | None,
-        typer.Option("--set", help="Override one value, as KEY=VALUE. Repeatable."),
-    ] = None,
+    set_: Overrides = None,
     skip_check: Annotated[
         bool, typer.Option("--skip-check", help="Render even when check reports an error.")
     ] = False,

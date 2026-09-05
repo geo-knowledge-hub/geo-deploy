@@ -30,6 +30,10 @@ DEFAULT_OUTPUT = Path("deploy")
 ConfigFile = Annotated[Path, typer.Option("--config", "-c", help="Configuration to read.")]
 Profile = Annotated[str, typer.Option("--profile", help="Start from a shipped profile.")]
 Force = Annotated[bool, typer.Option("--force", help="Overwrite what is already there.")]
+Overrides = Annotated[
+    list[str] | None,
+    typer.Option("--set", help="Override one value, as KEY=VALUE. Repeatable."),
+]
 
 
 def load_settings(path: Path, overrides: list[str]) -> dict:
