@@ -10,6 +10,8 @@
 
 import pytest
 
+from gkh_validation import HERE
+
 #
 # Constants
 #
@@ -57,7 +59,11 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """Skip the tests that publish unless the caller opted in.
+    """Skip this suite's tests that publish unless the caller opted in.
+
+    The entry point registers this plugin in every pytest run of the environment, so the
+    gate is confined to items collected from this package. A project that installs the
+    `validation` extra keeps its own `publishes` tests.
 
     Args:
         config (pytest.Config): The session configuration.
@@ -70,5 +76,5 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     skip = pytest.mark.skip(reason=SKIP_PUBLISH)
 
     for item in items:
-        if PUBLISHES in item.keywords:
+        if PUBLISHES in item.keywords and item.path.is_relative_to(HERE):
             item.add_marker(skip)
