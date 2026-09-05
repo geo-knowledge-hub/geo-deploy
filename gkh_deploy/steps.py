@@ -16,7 +16,6 @@ import typer
 # Constants - Roles
 #
 ROLES = ("admin", "geo-community", "geo-provider", "geo-secretariat")
-GEO_ROLES = ("geo-community", "geo-provider", "geo-secretariat")
 
 #
 # Constants - Data path
@@ -113,8 +112,9 @@ def sequence_configuration_steps(
         "invenio access allow geo-provider-access role geo-provider",
     ]
 
-    # command - add the administrator to the GEO roles
-    promotions = [f"invenio roles add {admin_email} {role}" for role in GEO_ROLES]
+    # command: add the administrator to every role, `admin` included: that is the
+    # role the access step grants superuser-access to, and nothing else joins it.
+    promotions = [f"invenio roles add {admin_email} {role}" for role in ROLES]
 
     # return the sequence of steps
     return [
@@ -140,7 +140,7 @@ def sequence_configuration_steps(
         ),
         Step(
             "users",
-            "Create the administrator and give them the GEO roles.",
+            "Create the administrator and give them every role.",
             tuple(
                 [
                     f"invenio users create --active --password={admin_password} {admin_email}",
