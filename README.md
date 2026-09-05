@@ -20,15 +20,15 @@ gkh deploy init --hostname gkhub.example.org --admin-email you@example.org
 
 This writes `gkh-deploy.yaml`, the only file you maintain. Open it and adjust the image tag, storage class and ingress class to your cluster.
 
-Next, check it:
+Next, check your configuration against the best practices recommended for the GEO Knowledge Hub:
 
 ```bash
 gkh deploy check
 ```
 
-Nine rules run against the Helm values the configuration produces, each printing the chart template or upstream source that justifies it.
+This command checks whether the configuration you provided aligns with the recommendations and known issues we encountered while deploying the GEO Knowledge Hub.
 
-Then, render the bundle:
+Once it is validated, you can generate your deployment bundle:
 
 ```bash
 gkh deploy generate -o deploy/
