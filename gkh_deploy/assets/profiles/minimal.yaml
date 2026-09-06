@@ -1,0 +1,56 @@
+# A single-node evaluation deployment, sized for Minikube or one small VM.
+version: 1
+target: k8s
+
+hostname: ""
+release: invenio
+namespace: invenio
+
+image:
+  repository: geoknowledgehub/geo-knowledge-hub
+  tag: v1.7.0.dev17
+
+admin:
+  email: ""
+
+datacite:
+  enabled: false
+  prefix: "10.5072"
+  test_mode: true
+  secret_name: gkh-datacite
+
+ingress:
+  enabled: true
+  class: nginx
+  tls_secret: ""
+
+scaling:
+  web_replicas: 1
+  worker_replicas: 1
+  uwsgi_processes: 2
+  uwsgi_threads: 2
+  worker_concurrency: 2
+
+storage:
+  enabled: true
+  size: 5G
+  class: standard
+
+secrets:
+  postgresql: gkh-postgresql
+  rabbitmq: gkh-rabbitmq
+
+# One OpenSearch node holding every role. The heap is half the memory limit,
+# which is what the bundled chart's own defaults get wrong.
+opensearch:
+  heap: 1024m
+  memory_request: 1Gi
+  memory_limit: 2Gi
+  cpu_request: 500m
+  cpu_limit: "1"
+
+flower:
+  enabled: false
+
+extra_config: {}
+extra_values: {}

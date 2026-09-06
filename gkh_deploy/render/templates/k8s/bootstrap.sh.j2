@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+#
+# Post-install sequence for a GEO Knowledge Hub instance.
+#
+#   ./bootstrap.sh          run the whole sequence
+#   ./bootstrap.sh <step>   resume from <step>, skipping the ones before it
+#
+# Run this AFTER `helm install`. It seeds the GEO-specific roles, users and
+# vocabularies that the chart does not.
+#
+# None of the steps can be applied twice: `invenio roles create` and friends fail
+# on a duplicate. So when one fails, fix the cause and resume from that step
+# rather than starting over.
+#
+# `gkh deploy bootstrap` prints these same steps, from the same definition, for
+# an operator who would rather run them by hand.
+
+set -euo pipefail
+
+NAMESPACE="{{ settings.namespace }}"
+SELECTOR="{{ selector }}"
+STEPS=({% for step in steps %}{{ step.name | shell }} {% endfor %})
+
+FROM="${1:-}"
+
+if [ -n "$FROM" ] && ! printf '%s\n' "${STEPS[@]}" | grep -qx -- "$FROM"; then
+  echo "unknown step '$FROM'; steps are: ${STEPS[*]}" >&2
+  exit 1
+fi
+
+DEPLOYMENT="$(kubectl get deployment -n "$NAMESPACE" -l "$SELECTOR" -o jsonpath='{.items[*].metadata.name}')"
+
+if [ -z "$DEPLOYMENT" ] || [ "$(echo "$DEPLOYMENT" | wc -w)" -ne 1 ]; then
+  echo "expected exactly one worker deployment matching $SELECTOR, found: '$DEPLOYMENT'" >&2
+  exit 1
+fi
+
+# The worker has a liveness probe (`celery inspect ping`) and no readiness probe, so it
+# reports Ready at once and is then killed and restarted until the broker answers. A
+# restart takes down whatever `kubectl exec` is running inside it, so wait for the
+# database, broker, cache and search cluster first. Only those carry the subcharts'
+# standard labels. The chart own pods are labelled by component alone, which keeps the
+# web pod out of the wait. It cannot become `ready` until this script has run.
+kubectl wait --for=condition=Ready pod -n "$NAMESPACE" \
+  -l 'app.kubernetes.io/managed-by=Helm' --timeout=15m
+
+kubectl rollout status "deployment/$DEPLOYMENT" -n "$NAMESPACE" --timeout=10m
+
+started=0
+
+run() {
+  local name="$1"
+  shift
+
+  if [ "$started" -eq 0 ] && [ -n "$FROM" ] && [ "$name" != "$FROM" ]; then
+    echo "--- $name (already done, skipping)"
+    return
+  fi
+
+  started=1
+  echo "--- $name"
+
+  if ! kubectl exec -n "$NAMESPACE" "deploy/$DEPLOYMENT" -c {{ container }} -- bash -lc "$*"; then
+    echo "step '$name' failed. Fix the cause, then resume with: $0 $name" >&2
+    exit 1
+  fi
+}
+{% for step in steps %}
+# {{ step.description }}
+run {{ step.name | shell }} {{ step.shell | shell }}
+{% endfor %}
+# `invenio rdm-records fixtures` only queues the vocabulary records: they are written by
+# Celery after the command has returned. Until that finishes the instance looks ready but
+# rejects the values it has not stored yet, so a community type comes back as "Not a valid
+# value". Wait for the broker queue to empty and the workers to fall idle.
+echo "--- settling"
+
+kubectl exec -n "$NAMESPACE" "deploy/$DEPLOYMENT" -c {{ container }} -- python -c '
+import time
+
+from invenio_app.celery import celery
+
+inspector = celery.control.inspect()
+settled = 0
+
+while settled < 3:
+    with celery.connection_or_acquire() as connection:
+        queued = connection.default_channel.queue_declare(
+            queue="celery", passive=True
+        ).message_count
+
+    running = sum(len(tasks) for tasks in (inspector.active() or {}).values())
+    settled = settled + 1 if queued == 0 and running == 0 else 0
+
+    if queued or running:
+        print(f"  {queued} queued, {running} running", flush=True)
+
+    time.sleep(5)
+'
+
+echo
+echo "Bootstrap complete."

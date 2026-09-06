@@ -1,0 +1,55 @@
+# A production-shaped deployment: redundant web and worker pods, more headroom
+# for the search cluster, and TLS terminated at the ingress.
+version: 1
+target: k8s
+
+hostname: ""
+release: invenio
+namespace: invenio
+
+image:
+  repository: geoknowledgehub/geo-knowledge-hub
+  tag: v1.7.0.dev17
+
+admin:
+  email: ""
+
+datacite:
+  enabled: true
+  prefix: ""
+  test_mode: false
+  secret_name: gkh-datacite
+
+ingress:
+  enabled: true
+  class: nginx
+  tls_secret: ""
+
+scaling:
+  web_replicas: 2
+  worker_replicas: 2
+  uwsgi_processes: 4
+  uwsgi_threads: 4
+  worker_concurrency: 4
+
+storage:
+  enabled: true
+  size: 100G
+  class: ""
+
+secrets:
+  postgresql: gkh-postgresql
+  rabbitmq: gkh-rabbitmq
+
+opensearch:
+  heap: 2048m
+  memory_request: 2Gi
+  memory_limit: 4Gi
+  cpu_request: "1"
+  cpu_limit: "2"
+
+flower:
+  enabled: false
+
+extra_config: {}
+extra_values: {}
