@@ -43,7 +43,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-gkh-cli = { path = "../gkh-cli" }
+gkh-cli = { git = "https://github.com/geo-knowledge-hub/geo-cli.git", branch = "main" }
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]

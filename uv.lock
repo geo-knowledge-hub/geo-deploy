@@ -105,18 +105,9 @@ wheels = [
 [[package]]
 name = "gkh-cli"
 version = "0.1.0"
-source = { directory = "../gkh-cli" }
+source = { git = "https://github.com/geo-knowledge-hub/geo-cli.git?branch=main#ce15519145953f4001080db25231f2afa8f00b49" }
 dependencies = [
     { name = "typer" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "typer", specifier = ">=0.27.2" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "ruff", specifier = ">=0.16.5" },
 ]
 
 [[package]]
@@ -147,7 +138,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "gkh-cli", directory = "../gkh-cli" },
+    { name = "gkh-cli", git = "https://github.com/geo-knowledge-hub/geo-cli.git?branch=main" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pydash", specifier = ">=8.1.0" },
     { name = "pytest", marker = "extra == 'validation'", specifier = ">=9.1.1" },
